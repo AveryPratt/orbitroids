@@ -25,64 +25,78 @@ function Rotational(forwardAngle, deltaRot){
 }
 function Vector(){
   this.origin;
-  this.point;
+  this.head;
   this.len;
+  this.dx;
+  this.dy;
   this.extend = function(mult){
     this.len *= mult;
-    this.point.x = this.origin.x + (this.point.x - this.origin.x) * mult;
-    this.point.y = this.origin.y + (this.point.y - this.origin.y) * mult;
+    this.head.x = this.origin.x + (this.dx) * mult;
+    this.head.y = this.origin.y + (this.dy) * mult;
   };
-  this.rotate = function(accelRot){
-    this.deltaRot += accelRot;
-    this.forwardAngle += this.deltaRot;
+  this.rotate = function(rot){
+    this.forwardAngle += rot;
     this.refineForwardAngle();
-    var newX = this.point.x * Math.cos(this.deltaRot) - this.point.y * Math.sin(this.deltaRot);
-    var newY = this.point.x * Math.sin(this.deltaRot) + this.point.y * Math.cos(this.deltaRot);
-    this.point.x = newX;
-    this.point.y = newY;
+    var newDX = this.len * Math.cos(this.forwardAngle);
+    var newDY = this.len * Math.sin(this.forwardAngle);
+    this.dx = newDX;
+    this.dy = newDY;
+    this.head.x = this.origin.x + this.dx;
+    this.head.y = this.origin.y + this.dy;
   };
   this.translate = function(vec){
-    this.point.x += vec.point.x - vec.origin.x;
-    this.origin.x += vec.point.x - vec.origin.x;
-    this.point.y += vec.point.y - vec.origin.y;
-    this.origin.y += vec.point.y - vec.origin.y;
+    this.head.x += vec.dx;
+    this.head.y += vec.dy;
+    this.origin.x += vec.dx;
+    this.origin.y += vec.dy;
   };
   this.combineVectors = function(vec){
-    var newPoint = new Point(this.point.x + vec.point.x, this.point.y + vec.point.y);
+    var newPoint = new Point(this.head.x + vec.dx, this.head.y + vec.dy);
     return new VecCart(newPoint, this.origin);
   };
 }
 Vector.prototype = new Rotational(0, 0);
-function VecCart(point, origin){
-  this.point = point;
+function VecCart(head, origin){
+  this.head = head;
   this.origin = origin;
-  this.len = Math.sqrt(Math.pow(point.x - origin.x, 2) + Math.pow(point.y - origin.y, 2));
-  var dx = (point.x - origin.x) / this.len;
-  var dy = (point.y - origin.y) / this.len;
-  this.forwardAngle = Math.asin(dx);
-  if(dy < 0){
+  this.dx = this.head.x - this.origin.x;
+  this.dy = this.head.y - this.origin.y;
+  this.len = Math.sqrt(Math.pow(head.x - origin.x, 2) + Math.pow(head.y - origin.y, 2));
+  var ux = this.dx / this.len;
+  var uy = this.dy / this.len;
+  this.forwardAngle = Math.asin(ux);
+  if(uy < 0){
     this.forwardAngle = Math.PI - this.forwardAngle;
     this.refineForwardAngle();
   }
 }
 VecCart.prototype = new Vector();
-function VecCirc(forwardAngle, len, origin){
+function VecCirc(len, origin, forwardAngle){
   this.forwardAngle = forwardAngle;
   this.len = len;
   this.origin = origin;
-  this.point = new Point(len * Math.sin(forwardAngle), len * Math.cos(forwardAngle));
+  this.dx = len * Math.sin(forwardAngle);
+  this.dy = len * Math.cos(forwardAngle);
+  this.head = new Point(this.origin.x + this.dx, this.origin.y + this.dy);
 }
 VecCirc.prototype = new Vector();
-
 function Orbital(center, vel){
   this.center = center;
   this.vel = vel;
-  this.accel = new VecCirc(0, 0, new Point(0, 0));
+  this.accel = new VecCirc(0, new Point(0, 0), 0);
   this.applyGravity = function(planet){
     var distVec = new VecCart(planet.center, this.center);
-    var gForce = planet.mass / (Math.pow(distVec.len));
-    this.accel = this.accel.combineVectors(new VecCirc(distVec.forwardAngle, gForce, this.center));
+    var force = planet.mass / (Math.pow(distVec.len, 2));
+    console.log(force);
+    var forceVec = new VecCirc(force, this.center, distVec.forwardAngle);
+    this.accel = this.accel.combineVectors(forceVec);
+  };
+  this.resetAccel = function(){
+    this.accel = new VecCirc(0, this.center, this.accel.forwardAngle);
+  };
+  this.applyMotion = function(){
     this.vel = this.vel.combineVectors(this.accel);
+    this.center = this.vel.head;
   };
 }
 Orbital.prototype = new Rotational(0, 0);
@@ -98,56 +112,71 @@ function Planet(center, radius, mass, fillColor){
     ctx.fill();
   };
 }
-function Ship(center, vel, color){
+function Ship(center, forwardAngle, vel, color){
   this.center = center;
+  this.forwardAngle = forwardAngle;
   this.vel = vel;
-  this.nose = new VecCart(new Point(this.center.x + 0, this.center.y + -10), this.center);
-  this.leftSide = new VecCart(new Point(this.center.x + 4, this.center.y + 5), this.center);
-  this.rightSide = new VecCart(new Point(this.center.x + -4, this.center.y + 5), this.center);
   this.thrust = .1;
+  this.nose;
+  this.leftSide;
+  this.rightSide;
   this.draw = function(){
     ctx.beginPath();
-    ctx.moveTo(this.nose.x, this.nose.y);
-    ctx.lineTo(this.leftSide.x, this.leftSide.y);
-    ctx.lineTo(this.rightSide.x, this.rightSide.y);
+    ctx.moveTo(this.nose.head.x, this.nose.head.y);
+    ctx.lineTo(this.leftSide.head.x, this.leftSide.head.y);
+    ctx.lineTo(this.center.x, this.center.y);
+    ctx.lineTo(this.rightSide.head.x, this.rightSide.head.y);
     ctx.closePath();
     ctx.lineWidth = 1;
     ctx.strokeStyle = color;
     ctx.stroke();
   };
-  this.burn = function(){
-    this.accelX += this.thrust * Math.sin(this.forwardAngle);
-    this.accelY += this.thrust * Math.cos(this.forwardAngle);
+  this.alignPoints = function(){
+    this.nose = new VecCirc(10, this.center, this.forwardAngle);
+    this.leftSide = new VecCirc(10, this.center, 5 * Math.PI / 6 + this.forwardAngle);
+    this.rightSide = new VecCirc(10, this.center, 7 * Math.PI / 6 + this.forwardAngle);
   };
-  this.rotate = function(){
-    this.forwardAngle += deltaRot;
-    if(this.forwardAngle >= Math.PI * 2){
-      this.forwardAngle -= Math.PI * 2;
-    }
-    this.nose.rotate(deltaRot);
-    this.leftSide.rotate(deltaRot);
-    this.rightSide.rotate(deltaRot);
+  this.rotate = function(accelRot){
+    this.deltaRot += accelRot;
+    this.forwardAngle += this.deltaRot;
+    this.refineForwardAngle();
+    this.nose.rotate(this.deltaRot);
+    this.leftSide.rotate(this.deltaRot);
+    this.rightSide.rotate(this.deltaRot);
   };
+  this.setDeltaRot = function(deltaRot){
+    this.deltaRot = deltaRot;
+    this.nose.deltaRot = deltaRot;
+    this.leftSide.deltaRot = deltaRot;
+    this.rightSide.deltaRot = deltaRot;
+  };
+  this.applyMotion = function(){
+    this.vel = this.vel.combineVectors(this.accel);
+    this.center = this.vel.head;
+    this.vel = new VecCart(new Point(this.vel.head.x + this.vel.dx, this.vel.head.y + this.vel.dy), this.vel.head);
+    this.alignPoints();
+  };
+  this.alignPoints();
 };
-Ship.prototype = new Orbital(new Point(0, 0), new VecCart(new Point(0, 0), new Point(0, 0))); // args for Orbital() constructor: new Point(0, 0), new VecCart(new Point(0, 0), new Point(0, 0))
+Ship.prototype = new Orbital(new Point(0, 0), new VecCart(new Point(0, 0), new Point(0, 0)));
 
 var planet = new Planet(new Point(canvas.width / 2, canvas.height / 2), canvas.width / 8, 200, 'green');
-var ship = new Ship(new Point(planet.center.x, planet.center.y - (planet.radius + 5)), new Point(-1.8, 0), '#ffffff');
+var shipCenter = new Point(planet.center.x, planet.center.y - (planet.radius + 10));
+var ship = new Ship(shipCenter, 0, new VecCirc(1.55, shipCenter, Math.PI / 2), '#ffffff');
+ship.setDeltaRot(-.03);
 
-ship.x = planet.center.x;
-ship.y = planet.center.y - (planet.radius + 10);
-ship.deltaX = -1.8;
+function renderFrame(){
+  requestAnimationFrame(renderFrame);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// function renderFrame(){
-//   requestAnimationFrame(renderFrame);
-//   ctx.clearRect(0, 0, canvas.width, canvas.height);
-//
-//   planet.draw();
-//
-//   ship.applyGravity(planet);
-//   ship.draw(ctx);
-// }
-// renderFrame();
+  planet.draw();
+  ship.resetAccel();
+  ship.applyGravity(planet);
+  ship.applyMotion();
+  ship.rotate(.0001);
+  ship.draw(ctx);
+}
+renderFrame();
 
 function handleKeyDown(event){
   switch(event.keyCode){
