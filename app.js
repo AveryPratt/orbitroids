@@ -8,6 +8,7 @@ var dampenControls = false;
 var rot = 0;
 var loaded = false;
 var shots = [];
+var removeArr = [];
 
 function Point(x, y){
   this.x = x;
@@ -234,7 +235,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
   };
   this.shoot = function(){
     this.accel = addVectors(this.accel, vecCirc(this.forwardAngle - Math.PI, 1));
-    var projection = vecCirc(this.forwardAngle, 2.5, this.nose.origin);
+    var projection = addVectors(this.vel, vecCirc(this.forwardAngle, 2.5, this.nose.origin));
     new Shot(projection);
   };
   this.alignPoints();
@@ -252,7 +253,7 @@ function Shot(vel){
 }
 Shot.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
 
-var planet = new Planet(new Point(canvas.width / 2, canvas.height / 2), canvas.width / 8, 200, '#999999');
+var planet = new Planet(new Point(canvas.width / 2, canvas.height / 2), canvas.width / 8, 300, '#999999');
 var shipVel = vecCirc(0, 0, new Point(planet.center.x, planet.center.y - (planet.radius + 10)));
 var ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 
@@ -261,10 +262,38 @@ function addVectors(vec1, vec2){
   var origin = new Point(vec1.origin.x, vec1.origin.y);
   return vecCart(delta, origin, vec1.deltaRot);
 }
+function checkShipPlanetCollision(){
+  var noseVec = vecCart(new Point(planet.center.x - ship.nose.head.x, planet.center.y - ship.nose.head.y), planet.center);
+  var leftSideVec = vecCart(new Point(planet.center.x - ship.leftSide.head.x, planet.center.y - ship.leftSide.head.y), planet.center);
+  var rightSideVec = vecCart(new Point(planet.center.x - ship.rightSide.head.x, planet.center.y - ship.rightSide.head.y), planet.center);
+  if(noseVec.len <= planet.radius || leftSideVec.len <= planet.radius || rightSideVec.len <= planet.radius){
+    return true;
+  }
+  else return false;
+}
+function checkShotCollisions(){
+  for (var i = 0; i < shots.length; i++) {
+    var distVec = vecCart(new Point(planet.center.x - shots[i].vel.head.x, planet.center.y - shots[i].vel.head.y), planet.center);
+    if(distVec.len <= planet.radius){
+      removeArr.push(i);
+    }
+  }
+  for (var i = 0; i < removeArr.length; i++) {
+    shots.splice(removeArr[i], 1);
+  }
+  removeArr = [];
+}
+function checkCollisions(){
+  if(checkShipPlanetCollision()){
+    ship = null;
+  }
+  checkShotCollisions();
+}
 
 (function renderFrame(){
   requestAnimationFrame(renderFrame);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  checkCollisions();
 
   planet.draw();
   if(start){
@@ -272,6 +301,7 @@ function addVectors(vec1, vec2){
     if(loaded){
       ship.shoot();
       loaded = false;
+      console.log(shots.length);
     }
     for (var i = 0; i < shots.length; i++) {
       shots[i].resetAccel();
@@ -321,7 +351,7 @@ function handleKeydown(event){
     event.preventDefault();
     rot = -.003;
     break;
-  case 32:
+  case 32: // space
     event.preventDefault();
     loaded = true;
   default:
