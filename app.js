@@ -9,6 +9,7 @@ var rot = 0;
 var loaded = false;
 var shots = [];
 var removeArr = [];
+var exploded = false;
 
 function Point(x, y){
   this.x = x;
@@ -175,40 +176,54 @@ function Ship(forwardAngle, deltaRot, vel, col){
   this.rear;
 
   this.draw = function(){
-    this.applyMotion();
-    ctx.beginPath();
-    ctx.moveTo(this.nose.head.x, this.nose.head.y);
-    ctx.lineTo(this.leftSide.head.x, this.leftSide.head.y);
-    ctx.lineTo(this.vel.origin.x, this.vel.origin.y);
-    ctx.lineTo(this.rightSide.head.x, this.rightSide.head.y);
-    ctx.closePath();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = col;
-    ctx.stroke();
-    if(this.flame){
-      if(dampenControls){
-        var mult = .25;
+    if(exploded){
+      if(typeof this.explosionCount !== 'number'){
+        this.explosionCount = 50;
       }
-      else mult = .5;
+      else if(this.explosionCount > 0){
+        this.explosionCount -= 1;
+        ctx.beginPath();
+        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 5, 0, 2 * Math.PI, false);
+        ctx.fillStyle = '#ff8000';
+        ctx.fill();
+      }
+    }
+    else{
+      this.applyMotion();
       ctx.beginPath();
-      ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
-      ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult));
-      ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult));
-      ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult));
+      ctx.moveTo(this.nose.head.x, this.nose.head.y);
+      ctx.lineTo(this.leftSide.head.x, this.leftSide.head.y);
+      ctx.lineTo(this.vel.origin.x, this.vel.origin.y);
+      ctx.lineTo(this.rightSide.head.x, this.rightSide.head.y);
       ctx.closePath();
       ctx.lineWidth = 1;
-      ctx.fillStyle = '#ff0000';
-      ctx.fill();
+      ctx.strokeStyle = col;
+      ctx.stroke();
+      if(this.flame){
+        if(dampenControls){
+          var mult = .25;
+        }
+        else mult = .5;
+        ctx.beginPath();
+        ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
+        ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult));
+        ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult));
+        ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult));
+        ctx.closePath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#ff0000';
+        ctx.fill();
 
-      ctx.beginPath();
-      ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
-      ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult));
-      ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * mult));
-      ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult));
-      ctx.closePath();
-      ctx.lineWidth = 1;
-      ctx.fillStyle = '#ffff00';
-      ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
+        ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult));
+        ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * mult));
+        ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult));
+        ctx.closePath();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = '#ffff00';
+        ctx.fill();
+      }
     }
   };
   this.alignPoints = function(){
@@ -262,6 +277,9 @@ function addVectors(vec1, vec2){
   var origin = new Point(vec1.origin.x, vec1.origin.y);
   return vecCart(delta, origin, vec1.deltaRot);
 }
+function checkShipEscaped(){
+  if()
+}
 function checkShipPlanetCollision(){
   var noseVec = vecCart(new Point(planet.center.x - ship.nose.head.x, planet.center.y - ship.nose.head.y), planet.center);
   var leftSideVec = vecCart(new Point(planet.center.x - ship.leftSide.head.x, planet.center.y - ship.leftSide.head.y), planet.center);
@@ -284,8 +302,8 @@ function checkShotCollisions(){
   removeArr = [];
 }
 function checkCollisions(){
-  if(checkShipPlanetCollision()){
-    ship = null;
+  if(checkShipPlanetCollision() || checkShipEscaped()){
+    exploded = true;
   }
   checkShotCollisions();
 }
