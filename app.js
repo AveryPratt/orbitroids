@@ -183,8 +183,18 @@ function Ship(forwardAngle, deltaRot, vel, col){
       else if(this.explosionCount > 0){
         this.explosionCount -= 1;
         ctx.beginPath();
+        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 3.3, 0, 2 * Math.PI, false);
+        ctx.fillStyle = '#ff0000';
+        ctx.fill();
+
+        ctx.beginPath();
         ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 5, 0, 2 * Math.PI, false);
         ctx.fillStyle = '#ff8000';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 10, 0, 2 * Math.PI, false);
+        ctx.fillStyle = '#ffff00';
         ctx.fill();
       }
     }
@@ -278,7 +288,10 @@ function addVectors(vec1, vec2){
   return vecCart(delta, origin, vec1.deltaRot);
 }
 function checkShipEscaped(){
-  if()
+  if(ship.vel.origin.x <= 0 || ship.vel.origin.x >= canvas.width || ship.vel.origin.y <= 0 || ship.vel.origin.y >= canvas.height){
+    return true;
+  }
+  else return false;
 }
 function checkShipPlanetCollision(){
   var noseVec = vecCart(new Point(planet.center.x - ship.nose.head.x, planet.center.y - ship.nose.head.y), planet.center);
@@ -316,10 +329,9 @@ function checkCollisions(){
   planet.draw();
   if(start){
     ship.resetAccel();
-    if(loaded){
+    if(loaded && !exploded){
       ship.shoot();
       loaded = false;
-      console.log(shots.length);
     }
     for (var i = 0; i < shots.length; i++) {
       shots[i].resetAccel();
