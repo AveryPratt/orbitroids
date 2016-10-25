@@ -7,8 +7,9 @@ var burning = false;
 var dampenControls = false;
 var rot = 0;
 var loaded = false;
+var asteroids = [];
 var shots = [];
-var removeArr = [];
+var shotRemoveArr = [];
 var exploded = false;
 
 function Point(x, y){
@@ -260,7 +261,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
   };
   this.shoot = function(){
     this.accel = addVectors(this.accel, vecCirc(this.forwardAngle - Math.PI, 1));
-    var projection = addVectors(this.vel, vecCirc(this.forwardAngle, 2.5, this.nose.origin));
+    var projection = addVectors(vecCirc(this.forwardAngle, 2.5, this.nose.head), this.vel);
     new Shot(projection);
   };
   this.alignPoints();
@@ -277,11 +278,91 @@ function Shot(vel){
   shots.push(this);
 }
 Shot.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
+function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
+  if(vel){this.vel = vel;}
+  else{this.vel = vecCirc();}
+
+  if(maxRadius){this.maxRadius = maxRadius;}
+  else{this.maxRadius = Math.random() * 20 + 20;}
+
+  if(roughness){this.roughness = roughness;}
+  else{this.roughness = .5;}
+
+  if(deltaRot){this.deltaRot = deltaRot;}
+  else{this.deltaRot = Math.random() / 10 - .05;}
+
+  if(forwardAngle){this.forwardAngle = forwardAngle;}
+  else{this.forwardAngle = 0;}
+
+  this.arms = [];
+  this.armLengths = [];
+  for (var i = 0; i < 1 + Math.sqrt(this.maxRadius); i++) {
+    this.armLengths[i] = this.maxRadius - Math.random() * this.maxRadius * this.roughness;
+  }
+  this.alignPoints = function(){
+    for (var i = 0; i < this.armLengths.length; i++) {
+      var angle = this.forwardAngle + i * 2 * Math.PI / (1 + Math.sqrt(this.maxRadius));
+      this.arms[i] = vecCirc(angle, this.armLengths[i], this.vel.origin, this.deltaRot);
+    }
+  };
+  this.draw = function(){
+    this.rotate();
+    this.alignPoints();
+    ctx.beginPath();
+    ctx.moveTo(this.arms[this.arms.length - 1].head.x, this.arms[this.arms.length - 1].head.y);
+    for (var i = 0; i < this.arms.length; i++) {
+      ctx.lineTo(this.arms[i].head.x, this.arms[i].head.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
+  };
+  this.rotate = function(accelRot){
+    if(accelRot){this.deltaRot += accelRot;}
+    this.forwardAngle += this.deltaRot;
+    this.refineForwardAngle();
+  };
+  this.alignPoints();
+  asteroids.push(this);
+}
+Asteroid.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
 
 var planet = new Planet(new Point(canvas.width / 2, canvas.height / 2), canvas.width / 8, 300, '#999999');
 var shipVel = vecCirc(0, 0, new Point(planet.center.x, planet.center.y - (planet.radius + 10)));
 var ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
+var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, canvas.width / 4, planet.center);
 
+function newRad(oldRad){
+  return (Math.random() + .5) * oldRad / 2;
+}
+function removeShot(index){
+  shotRemoveArr.push(index);
+  for (var i = 0; i < shotRemoveArr.length; i++) {
+    shots.splice(shotRemoveArr[i], 1);
+  }
+  shotRemoveArr = [];
+}
+function explodeAsteroid(index, reflectionAngle){
+  if(asteroids[index].maxRadius >= 10){
+    var parentAsteroid = asteroids[index];
+    asteroids.splice(index, 1);
+    var rad = newRad(parentAsteroid.maxRadius);
+    var newVec = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 3 / rad));
+    // if(reflectionAngle){
+    //   newVec = vecCirc(reflectionAngle - newVec.forwardAngle, 3 * newVec.len / 4, newVec.origin);
+    //   // forwardAngle, len, origin, deltaRot
+    // }
+    new Asteroid(newVec, rad);
+    rad = newRad(parentAsteroid.maxRadius);
+    newVec = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 3 / rad));
+    // if(reflectionAngle){
+    //   newVec = vecCirc(reflectionAngle - newVec.forwardAngle - reflectionAngle, 3 * newVec.len / 4, newVec.origin);
+    //   // forwardAngle, len, origin, deltaRot
+    // }
+    new Asteroid(addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle - Math.PI, 3 / rad)), rad);
+  }
+  else asteroids.splice(index, 1);
+}
 function addVectors(vec1, vec2){
   var delta = new Point(vec1.delta.x + vec2.delta.x, vec1.delta.y + vec2.delta.y);
   var origin = new Point(vec1.origin.x, vec1.origin.y);
@@ -302,43 +383,89 @@ function checkShipPlanetCollision(){
   }
   else return false;
 }
-function checkShotCollisions(){
+function checkShotPlanetCollisions(){
   for (var i = 0; i < shots.length; i++) {
-    var distVec = vecCart(new Point(planet.center.x - shots[i].vel.head.x, planet.center.y - shots[i].vel.head.y), planet.center);
+    var distVec = vecCart(new Point(planet.center.x - shots[i].vel.origin.x, planet.center.y - shots[i].vel.origin.y), planet.center);
     if(distVec.len <= planet.radius){
-      removeArr.push(i);
+      removeShot(i);
     }
   }
-  for (var i = 0; i < removeArr.length; i++) {
-    shots.splice(removeArr[i], 1);
+}
+function checkAsteroidPlanetCollisions(){
+  for (var i = 0; i < asteroids.length; i++) {
+    var distVec = vecCart(new Point(planet.center.x - asteroids[i].vel.origin.x, planet.center.y - asteroids[i].vel.origin.y), planet.center);
+    if(distVec.len <= planet.radius + asteroids[i].maxRadius){
+      explodeAsteroid(i, distVec.forwardAngle + Math.PI / 2);
+    }
   }
-  removeArr = [];
+}
+function checkAsteroidShipCollision(){
+  if(!exploded){
+    for (var i = 0; i < asteroids.length; i++) {
+      var noseVec = vecCart(new Point(asteroids[i].vel.origin.x - ship.nose.head.x, asteroids[i].vel.origin.y - ship.nose.head.y), asteroids[i].vel.origin);
+      var leftSideVec = vecCart(new Point(asteroids[i].vel.origin.x - ship.leftSide.head.x, asteroids[i].vel.origin.y - ship.leftSide.head.y), asteroids[i].vel.origin);
+      var rightSideVec = vecCart(new Point(asteroids[i].vel.origin.x - ship.rightSide.head.x, asteroids[i].vel.origin.y - ship.rightSide.head.y), asteroids[i].vel.origin);
+      if(noseVec.len <= asteroids[i].maxRadius || leftSideVec.len <= asteroids[i].maxRadius || rightSideVec.len <= asteroids[i].maxRadius){
+        exploded = true;
+        explodeAsteroid(i);
+      }
+    }
+  }
+}
+function checkShotAsteroidCollisions(){
+  for (var i = 0; i < asteroids.length; i++) {
+    for (var j = 0; j < shots.length; j++) {
+      var delta = new Point(asteroids[i].vel.origin.x - shots[j].vel.origin.x, asteroids[i].vel.origin.y - shots[j].vel.origin.y);
+      var distVec = vecCart(delta, shots[j].vel.origin);
+      if(distVec.len < asteroids[i].maxRadius){
+        explodeAsteroid(i);
+        removeShot(j);
+      }
+    }
+  }
 }
 function checkCollisions(){
   if(checkShipPlanetCollision() || checkShipEscaped()){
     exploded = true;
   }
-  checkShotCollisions();
+  checkAsteroidShipCollision();
+  checkShotPlanetCollisions();
+  checkShotAsteroidCollisions();
+  checkAsteroidPlanetCollisions();
 }
 
+(function launchAsteroid(){
+  if(Math.random() > .5){
+    var prograde = startingPointVec.forwardAngle + Math.PI / 2;
+  }
+  else prograde = startingPointVec.forwardAngle - Math.PI / 2;
+  var asteroidVel = vecCirc(prograde, 1.5, startingPointVec.head);
+  new Asteroid(asteroidVel);
+}());
 (function renderFrame(){
   requestAnimationFrame(renderFrame);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   checkCollisions();
 
   planet.draw();
+  ship.resetAccel();
+  if(loaded && !exploded){
+    ship.shoot();
+    loaded = false;
+  }
+  for (var i = 0; i < asteroids.length; i++) {
+    asteroids[i].resetAccel();
+    asteroids[i].applyGravity(planet);
+    asteroids[i].applyMotion();
+    asteroids[i].draw();
+  }
+  for (var i = 0; i < shots.length; i++) {
+    shots[i].resetAccel();
+    shots[i].applyGravity(planet);
+    shots[i].applyMotion();
+    shots[i].draw();
+  }
   if(start){
-    ship.resetAccel();
-    if(loaded && !exploded){
-      ship.shoot();
-      loaded = false;
-    }
-    for (var i = 0; i < shots.length; i++) {
-      shots[i].resetAccel();
-      shots[i].applyGravity(planet);
-      shots[i].applyMotion();
-      shots[i].draw();
-    }
     ship.applyGravity(planet);
     if(burning){
       ship.flame = true;
