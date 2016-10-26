@@ -11,6 +11,9 @@ var asteroids = [];
 var shots = [];
 var shotRemoveArr = [];
 var exploded = false;
+var lives = 3;
+var planet = new Planet(new Point(canvas.width / 2, canvas.height / 2), canvas.width / 8, 400, '#999999');
+var ship;
 
 function Point(x, y){
   this.x = x;
@@ -169,6 +172,8 @@ function Ship(forwardAngle, deltaRot, vel, col){
   if(col){this.col = col;}
   else{this.col = '#ffffff';}
 
+  this.trueAnom;
+
   this.accel = vecCirc();
 
   this.nose;
@@ -197,6 +202,16 @@ function Ship(forwardAngle, deltaRot, vel, col){
         ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 10, 0, 2 * Math.PI, false);
         ctx.fillStyle = '#ffff00';
         ctx.fill();
+      }
+      else{
+        lives -= 1;
+        exploded = false;
+        if(lives > 0){
+          setShipTop();
+        }
+        else{
+          ship = null;
+        }
       }
     }
     else{
@@ -253,6 +268,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
   this.applyMotion = function(){
     this.vel = addVectors(this.vel, this.accel);
     this.vel = vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
+    this.trueAnom = vecCart(new Point(planet.center.x - this.vel.origin.x, planet.center.y - this.vel.origin.y), planet.origin);
     this.alignPoints();
   };
   this.burn = function(force){
@@ -327,10 +343,11 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
 }
 Asteroid.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
 
-var planet = new Planet(new Point(canvas.width / 2, canvas.height / 2), canvas.width / 8, 300, '#999999');
-var shipVel = vecCirc(0, 0, new Point(planet.center.x, planet.center.y - (planet.radius + 10)));
-var ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
-var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, canvas.width / 4, planet.center);
+function setShipTop(){
+  start = false;
+  var shipVel = vecCirc(0, 0, new Point(planet.center.x, planet.center.y - (planet.radius + 10)));
+  ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
+}
 
 function newRad(oldRad){
   return (Math.random() + .5) * oldRad / 2;
@@ -342,24 +359,24 @@ function removeShot(index){
   }
   shotRemoveArr = [];
 }
-function explodeAsteroid(index, reflectionAngle){
+function explodeAsteroid(index, tangentAngle){
   if(asteroids[index].maxRadius >= 10){
     var parentAsteroid = asteroids[index];
     asteroids.splice(index, 1);
-    var rad = newRad(parentAsteroid.maxRadius);
-    var newVec = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 3 / rad));
-    // if(reflectionAngle){
-    //   newVec = vecCirc(reflectionAngle - newVec.forwardAngle, 3 * newVec.len / 4, newVec.origin);
-    //   // forwardAngle, len, origin, deltaRot
-    // }
-    new Asteroid(newVec, rad);
-    rad = newRad(parentAsteroid.maxRadius);
-    newVec = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 3 / rad));
-    // if(reflectionAngle){
-    //   newVec = vecCirc(reflectionAngle - newVec.forwardAngle - reflectionAngle, 3 * newVec.len / 4, newVec.origin);
-    //   // forwardAngle, len, origin, deltaRot
-    // }
-    new Asteroid(addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle - Math.PI, 3 / rad)), rad);
+    var rad1 = newRad(parentAsteroid.maxRadius);
+    var rad2 = newRad(parentAsteroid.maxRadius);
+    var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 3 / rad1));
+    var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 3 / rad2));
+    if(tangentAngle){
+      var bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
+      newVec1 = addVectors(newVec1, bounce);
+      newVec1.refineForwardAngle();
+      newVec2 = addVectors(newVec2, bounce);
+      newVec2.refineForwardAngle();
+      // forwardAngle, len, origin, deltaRot
+    }
+    new Asteroid(newVec1, rad1);
+    new Asteroid(newVec2, rad2);
   }
   else asteroids.splice(index, 1);
 }
@@ -395,7 +412,7 @@ function checkAsteroidPlanetCollisions(){
   for (var i = 0; i < asteroids.length; i++) {
     var distVec = vecCart(new Point(planet.center.x - asteroids[i].vel.origin.x, planet.center.y - asteroids[i].vel.origin.y), planet.center);
     if(distVec.len <= planet.radius + asteroids[i].maxRadius){
-      explodeAsteroid(i, distVec.forwardAngle + Math.PI / 2);
+      explodeAsteroid(i, distVec.forwardAngle);
     }
   }
 }
@@ -433,15 +450,31 @@ function checkCollisions(){
   checkShotAsteroidCollisions();
   checkAsteroidPlanetCollisions();
 }
+function checkcomplete(){
+  for (var i = 0; i < asteroids.length; i++) {
+    if(asteroids[i].vel.origin.x < canvas.width && asteroids[i].vel.origin.y < canvas.height && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
+      return false;
+    }
+  }
+  return true;
+}
 
-(function launchAsteroid(){
+function launchAsteroid(){
+  if(!start){
+    var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, canvas.width / 4, planet.center);
+  }
+  else{
+    startingPointVec = vecCirc(ship.trueAnom.forwardAngle, canvas.width / 4, planet.center);
+  }
   if(Math.random() > .5){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
   }
   else prograde = startingPointVec.forwardAngle - Math.PI / 2;
-  var asteroidVel = vecCirc(prograde, 1.5, startingPointVec.head);
+  var asteroidVel = vecCirc(prograde, 1.65, startingPointVec.head);
   new Asteroid(asteroidVel);
-}());
+};
+setShipTop();
+launchAsteroid();
 (function renderFrame(){
   requestAnimationFrame(renderFrame);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -487,6 +520,9 @@ function checkCollisions(){
     }
   }
   ship.draw();
+  if(checkcomplete()){
+    launchAsteroid();
+  }
 }());
 
 function handleKeydown(event){
