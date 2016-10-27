@@ -348,7 +348,7 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
   asteroids.push(this);
 }
 Asteroid.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
-function Life(vel, deltaRot, forwardAngle){
+function Bonus(vel, deltaRot, forwardAngle){
   if(vel){this.vel = vel;}
   else{this.vel = vecCirc();}
 
@@ -362,7 +362,7 @@ function Life(vel, deltaRot, forwardAngle){
 
   }
 }
-Life.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
+Bonus.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
 
 function newRad(oldRad){
   return (Math.random() + .5) * oldRad / 2;
@@ -482,19 +482,44 @@ function setShipTop(){
   var shipVel = vecCirc(0, 0, new Point(planet.center.x, planet.center.y - (planet.radius + 10)));
   ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 }
-function launchAsteroid(maxRadius){
+function launchBonus(placement, direction){
+  if(!bonus){
+    if(placement){
+      var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 3, canvas.width / 4, planet.center);
+    }
+    else {
+      startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 3, canvas.width / 4, planet.center);
+    }
+    if(direction){
+      var prograde = startingPointVec.forwardAngle + Math.PI / 2;
+    }
+    else{
+      prograde = startingPointVec.forwardAngle - Math.PI / 2;
+    }
+    var vel = vecCirc(prograde, 1.65, startingPointVec.head);
+    new Asteroid(vel, maxRadius);
+  }
+}
+function launchAsteroid(placement, direction, maxRadius){
   if(!start){
     var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, canvas.width / 4, planet.center);
   }
   else{
-    startingPointVec = vecCirc(ship.trueAnom.forwardAngle, canvas.width / 4, planet.center);
+    if(placement){
+      startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 3, canvas.width / 4, planet.center);
+    }
+    else {
+      startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 3, canvas.width / 4, planet.center);
+    }
   }
-  if(Math.random() > .5){
+  if(direction){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
   }
-  else prograde = startingPointVec.forwardAngle - Math.PI / 2;
-  var asteroidVel = vecCirc(prograde, 1.65, startingPointVec.head);
-  new Asteroid(asteroidVel, maxRadius);
+  else{
+    prograde = startingPointVec.forwardAngle - Math.PI / 2;
+  }
+  var vel = vecCirc(prograde, 1.65, startingPointVec.head);
+  new Asteroid(vel, maxRadius);
 };
 
 setShipTop();
@@ -565,8 +590,19 @@ launchAsteroid();
         }
       }
       ship.draw();
-      if(checkcomplete()){3
-        launchAsteroid();
+      if(checkcomplete()){
+        var placement;
+        var direction;
+        if(Math.random() > .5){
+          placement = true;
+        }
+        else placement = false;
+        if(Math.random() > .5){
+          direction = true;
+        }
+        else direction = false;
+        launchAsteroid(placement, direction);
+        launchBonus(placement, direction);
       }
     }
   }
