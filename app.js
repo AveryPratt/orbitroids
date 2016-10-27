@@ -14,6 +14,9 @@ var exploded = false;
 var lives = 3;
 var planet = new Planet(new Point(canvas.width / 2, canvas.height / 2), canvas.width / 8, 400, '#999999');
 var ship;
+var gameEnd = false;
+var startScreen = true;
+var score = 0;
 
 function Point(x, y){
   this.x = x;
@@ -204,13 +207,16 @@ function Ship(forwardAngle, deltaRot, vel, col){
         ctx.fill();
       }
       else{
-        lives -= 1;
+        if(!gameEnd){
+          lives -= 1;
+        }
         exploded = false;
+        loaded = false;
         if(lives > 0){
           setShipTop();
         }
         else{
-          ship = null;
+          gameEnd = true;
         }
       }
     }
@@ -342,12 +348,21 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
   asteroids.push(this);
 }
 Asteroid.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
+function Life(vel, deltaRot, forwardAngle){
+  if(vel){this.vel = vel;}
+  else{this.vel = vecCirc();}
 
-function setShipTop(){
-  start = false;
-  var shipVel = vecCirc(0, 0, new Point(planet.center.x, planet.center.y - (planet.radius + 10)));
-  ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
+  if(deltaRot){this.deltaRot = deltaRot;}
+  else{this.deltaRot = Math.random() / 10 - .05;}
+
+  if(forwardAngle){this.forwardAngle = forwardAngle;}
+  else{this.forwardAngle = 0;}
+
+  this.draw = function(){
+
+  }
 }
+Life.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
 
 function newRad(oldRad){
   return (Math.random() + .5) * oldRad / 2;
@@ -435,6 +450,9 @@ function checkShotAsteroidCollisions(){
       var delta = new Point(asteroids[i].vel.origin.x - shots[j].vel.origin.x, asteroids[i].vel.origin.y - shots[j].vel.origin.y);
       var distVec = vecCart(delta, shots[j].vel.origin);
       if(distVec.len < asteroids[i].maxRadius){
+        if(!gameEnd){
+          score += 5;
+        }
         explodeAsteroid(i);
         removeShot(j);
       }
@@ -459,7 +477,12 @@ function checkcomplete(){
   return true;
 }
 
-function launchAsteroid(){
+function setShipTop(){
+  start = false;
+  var shipVel = vecCirc(0, 0, new Point(planet.center.x, planet.center.y - (planet.radius + 10)));
+  ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
+}
+function launchAsteroid(maxRadius){
   if(!start){
     var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, canvas.width / 4, planet.center);
   }
@@ -471,84 +494,114 @@ function launchAsteroid(){
   }
   else prograde = startingPointVec.forwardAngle - Math.PI / 2;
   var asteroidVel = vecCirc(prograde, 1.65, startingPointVec.head);
-  new Asteroid(asteroidVel);
+  new Asteroid(asteroidVel, maxRadius);
 };
+
 setShipTop();
 launchAsteroid();
 (function renderFrame(){
   requestAnimationFrame(renderFrame);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  checkCollisions();
+  if(startScreen){
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '18px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Press any key to start', canvas.width / 2, canvas.height / 2);
+  }
+  else{
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'left';
+    ctx.strokeText('lives: ' + lives, 10, 18);
+    checkCollisions();
 
-  planet.draw();
-  ship.resetAccel();
-  if(loaded && !exploded){
-    ship.shoot();
-    loaded = false;
-  }
-  for (var i = 0; i < asteroids.length; i++) {
-    asteroids[i].resetAccel();
-    asteroids[i].applyGravity(planet);
-    asteroids[i].applyMotion();
-    asteroids[i].draw();
-  }
-  for (var i = 0; i < shots.length; i++) {
-    shots[i].resetAccel();
-    shots[i].applyGravity(planet);
-    shots[i].applyMotion();
-    shots[i].draw();
-  }
-  if(start){
-    ship.applyGravity(planet);
-    if(burning){
-      ship.flame = true;
-      if(dampenControls){
-        ship.burn(.01);
-      }
-      else{
-        ship.burn(.1);
-      }
+    ctx.textAlign = 'right';
+    ctx.strokeText('score: ' + score, canvas.width - 10, 18)
+
+    planet.draw();
+    ship.resetAccel();
+    if(loaded && !exploded){
+      ship.shoot();
+      loaded = false;
+    }
+    for (var i = 0; i < asteroids.length; i++) {
+      asteroids[i].resetAccel();
+      asteroids[i].applyGravity(planet);
+      asteroids[i].applyMotion();
+      asteroids[i].draw();
+    }
+    for (var i = 0; i < shots.length; i++) {
+      shots[i].resetAccel();
+      shots[i].applyGravity(planet);
+      shots[i].applyMotion();
+      shots[i].draw();
+    }
+    if(gameEnd){
+      ctx.fillStyle = '#000000';
+      ctx.font = '18px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
     }
     else{
-      ship.flame = false;
+      if(start){
+        ship.applyGravity(planet);
+        if(burning){
+          ship.flame = true;
+          if(dampenControls){
+            ship.burn(.01);
+          }
+          else{
+            ship.burn(.1);
+          }
+        }
+        else{
+          ship.flame = false;
+        }
+        if(dampenControls){
+          ship.rotate(rot / 10);
+        }
+        else{
+          ship.rotate(rot);
+        }
+      }
+      ship.draw();
+      if(checkcomplete()){3
+        launchAsteroid();
+      }
     }
-    if(dampenControls){
-      ship.rotate(rot / 10);
-    }
-    else{
-      ship.rotate(rot);
-    }
-  }
-  ship.draw();
-  if(checkcomplete()){
-    launchAsteroid();
   }
 }());
 
 function handleKeydown(event){
+  if(startScreen){
+    event.preventDefault();
+    startScreen = false;
+  }
+  else{
   switch(event.keyCode){
-  case 16: // shift
-    event.preventDefault();
-    dampenControls = true;
-    break;
-  case 38: // up
-    event.preventDefault();
-    start = true;
-    burning = true;
-    break;
-  case 37: // left
-    event.preventDefault();
-    rot = .003;
-    break;
-  case 39: // right
-    event.preventDefault();
-    rot = -.003;
-    break;
-  case 32: // space
-    event.preventDefault();
-    loaded = true;
-  default:
-    break;
+    case 16: // shift
+      event.preventDefault();
+      dampenControls = true;
+      break;
+    case 38: // up
+      event.preventDefault();
+      start = true;
+      burning = true;
+      break;
+    case 37: // left
+      event.preventDefault();
+      rot = .003;
+      break;
+    case 39: // right
+      event.preventDefault();
+      rot = -.003;
+      break;
+    case 32: // space
+      event.preventDefault();
+      loaded = true;
+    default:
+      break;
+    }
   }
 }
 function handleKeyup(event){
