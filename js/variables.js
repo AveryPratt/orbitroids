@@ -28,9 +28,4 @@ var maxAsteroids = 20;
 var scores = [];
 var scoreNumber = 10;
 var newScore = true;
-var nameInput = new CanvasInput({
-  canvas: canvas,
-  placeholder: 'Enter your name...',
-  x: canvas.width / 2 - 75,
-  y: canvas.height / 2
-});
+var nameInput = document.getElementById('nameInput');

@@ -4,6 +4,22 @@ html, body {
 }
 
 canvas {
-  margin: 50px;
+  display: inline-block;
   background-color: #000000;
+}
+
+textarea {
+  margin-top: 300px;
+  margin-left: 50%;
+  left: -80px;
+  position: absolute;
+  background-color: rgba(80, 80, 80, 0.5);
+  color: #ffffff;
+  border: none;
+  resize: none;
+  text-align: center;
+}
+
+textarea:focus {
+  outline: none;
 }
