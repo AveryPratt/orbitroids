@@ -2,7 +2,7 @@
 
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-var name = 'myName';
+var name;
 var start = false;
 var launched = false;
 var burning = false;
@@ -28,3 +28,9 @@ var maxAsteroids = 20;
 var scores = [];
 var scoreNumber = 10;
 var newScore = true;
+var nameInput = new CanvasInput({
+  canvas: canvas,
+  placeholder: 'Enter your name...',
+  x: canvas.width / 2 - 75,
+  y: canvas.height / 2
+});

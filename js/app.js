@@ -85,19 +85,39 @@ function reduceAsteroids(num){
   planet = new Planet(400, canvas.width / 8, vecCart(new Point(0, 0), new Point(canvas.width / 2, canvas.height / 2)), 0, '#008080');
 }());
 setShipTop();
-(function renderFrame(){
-  requestAnimationFrame(renderFrame);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+function initializeNameInput(previousName){
+  nameInput = new CanvasInput({
+    canvas: canvas,
+    placeholder: 'Enter your name...',
+    x: canvas.width / 2 - 75,
+    y: canvas.height / 2
+  });
+  if(previousName){
+    nameInput.value = previousName;
+  }
+}
+function renderFrame(){
   if(startScreen){
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '18px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Press any key to start', canvas.width / 2, canvas.height / 2);
-    if(!newScore){
-      newScore = true;
+    name = localStorage.getItem('previousName');
+    if(name && name != 'null'){
+      initializeNameInput(name);
+      console.log(name);
+      startScreen = false;
+      requestAnimationFrame(renderFrame);
+    }
+    else{
+      initializeNameInput('');
+      nameInput.render();
+      nameInput.focus();
+      if(!newScore){
+        newScore = true;
+      }
     }
   }
   else{
+    requestAnimationFrame(renderFrame);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     planet.draw();
     reduceShots(maxShots);
     reduceAsteroids(maxAsteroids);
@@ -149,18 +169,36 @@ setShipTop();
       shots[i].draw();
     }
     if(gameEnd){
-      ctx.fillStyle = '#000000';
-      ctx.font = '18px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
       if(newScore){
         var thisFinalScore = new ScoreItem(score, name);
         retrieveScores();
         addScore(thisFinalScore);
         storeScores();
         newScore = false;
-        console.log(scores);
       }
+      ctx.fillStyle = 'rgba(255, 255, 255, .6)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000000';
+      ctx.font = '24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Game Over', canvas.width / 2, 60);
+      ctx.font = '12px Arial';
+      ctx.fillText('Press enter to play again', canvas.width / 2, 80);
+      ctx.font = '18px Arial';
+      ctx.textAlign = 'left';
+      var scoreSelected = false;
+      for (var i = 0; i < scores.length; i++) {
+        if(!scoreSelected && scores[i].finalScore === score && scores[i].name === name){
+          ctx.fillStyle = '#ff0000';
+          scoreSelected = true;
+        }
+        else{
+          ctx.fillStyle = '#000000';
+        }
+        ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, canvas.width / 2 - 60, 100 + 20 * i);
+      }
+      nameInput.render();
+      nameInput.focus();
     }
     else{
       if(start && !paused){
@@ -209,51 +247,70 @@ setShipTop();
       }
     }
   }
-}());
-
+}
+renderFrame();
 function handleKeydown(event){
-  if(startScreen){
+  switch(event.keyCode){
+  case 13: // enter
     event.preventDefault();
-    startScreen = false;
-  }
-  else if(paused){
-    event.preventDefault();
-    paused = false;
-  }
-  else{
-    switch(event.keyCode){
-    case 16: // shift
+    if(startScreen){
+      startScreen = false;
+      name = nameInput.selectText().value();
+      localStorage.setItem('previousName', name);
+      renderFrame();
+    }
+    else if(gameEnd){
+      name = nameInput.selectText().value();
+      localStorage.setItem('previousName', name);
+      window.location.reload();
+    }
+    break;
+  case 16: // shift
+    if(!gameEnd){
       event.preventDefault();
       dampenControls = true;
-      break;
-    case 38: // up
+    }
+    break;
+  case 38: // up
+    if(!startScreen && !gameEnd){
       event.preventDefault();
       start = true;
       burning = true;
-      break;
-    case 37: // left
+    }
+    break;
+  case 37: // left
+    if(!gameEnd){
       event.preventDefault();
       rot = .003;
-      break;
-    case 39: // right
+    }
+    break;
+  case 39: // right
+    if(!gameEnd){
       event.preventDefault();
       rot = -.003;
-      break;
-    case 32: // space
+    }
+    break;
+  case 32: // space
+    if(!gameEnd){
       event.preventDefault();
       if(start){
         loaded = true;
       }
-      break;
-    case 80: // p
+    }
+    break;
+  case 80: // p
+    if(!gameEnd){
       event.preventDefault();
-      if(!gameEnd){
+      if(paused){
+        paused = false;
+      }
+      else if(!paused){
         paused = true;
       }
-      break;
-    default:
-      break;
     }
+    break;
+  default:
+    break;
   }
 }
 function handleKeyup(event){
