@@ -305,11 +305,37 @@ function renderFrame(){
   }
 }
 
-setCanvas();
-setTextarea();
-setPlanet();
-setShipTop();
-renderFrame();
+function init(){
+  canvas = document.getElementById('canvas');
+  ctx = canvas.getContext('2d');
+  start = false;
+  launched = false;
+  burning = false;
+  dampenControls = false;
+  rot = 0;
+  loaded = false;
+  asteroids = [];
+  shots = [];
+  shotRemoveArr = [];
+  exploded = false;
+  lives = 3;
+  gameEnd = false;
+  startScreen = true;
+  score = 0;
+  bonus = 'start';
+  paused = false;
+  maxShots = 30;
+  maxAsteroids = 20;
+
+  scores = [];
+  scoreNumber = 10;
+  newScore = true;
+  nameInput = document.getElementById('nameInput');
+  setCanvas();
+  setTextarea();
+  setPlanet();
+  setShipTop();
+}
 function handleKeydown(event){
   switch(event.keyCode){
   case 13: // enter
@@ -324,7 +350,7 @@ function handleKeydown(event){
       event.preventDefault();
       name = nameInput.value;
       sessionStorage.setItem('previousName', name);
-      window.location.reload();
+      init();
     }
     break;
   case 16: // shift
@@ -396,3 +422,6 @@ function handleKeyup(event){
 }
 window.addEventListener('keydown', handleKeydown);
 window.addEventListener('keyup', handleKeyup);
+
+init();
+renderFrame();
