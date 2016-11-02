@@ -64,6 +64,7 @@ function reduceShots(num){
         indexToRemove = i;
       }
     }
+    console.log(Math.abs(shots[indexToRemove].vel.origin.x) + Math.abs(shots[indexToRemove].vel.origin.y));
     shots.splice(indexToRemove, 1);
   }
 }
@@ -87,16 +88,18 @@ function reduceAsteroids(num){
 setShipTop();
 
 function checkCollisions(){
-  checkShipEscaped();
-  checkShipPlanetCollision();
-  checkAsteroidShipCollision();
+  if(!gameEnd){
+    checkShipEscaped();
+    checkShipPlanetCollision();
+    checkAsteroidShipCollision();
+    if(bonus && bonus != 'start'){
+      checkBonusShipCollision();
+    }
+  }
   checkShotPlanetCollisions();
   checkShotAsteroidCollisions();
   checkAsteroidPlanetCollisions();
   checkShotShipCollisions();
-  if(bonus && bonus != 'start'){
-    checkBonusShipCollision();
-  }
 }
 function renderShip(){
   if(start && !paused){
@@ -134,7 +137,6 @@ function renderStartScreen(){
   name = sessionStorage.getItem('previousName');
   if(name && name != 'null'){
     initializeNameInput(name);
-    console.log(name);
     startScreen = false;
     requestAnimationFrame(renderFrame);
   }
@@ -201,15 +203,15 @@ function renderEndScreen(){
     newScore = false;
   }
   ctx.fillStyle = 'rgba(255, 255, 255, .6)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, 600, 600);
   ctx.fillStyle = '#000000';
   ctx.font = '24px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Game Over', canvas.width / 2, 60);
+  ctx.fillText('Game Over', 300, 60);
   ctx.font = '12px Arial';
-  ctx.fillText('Press enter to play again', canvas.width / 2, 80);
+  ctx.fillText('Press enter to play again', 300, 290);
   ctx.font = '18px Arial';
-  ctx.textAlign = 'left';
+  ctx.textAlign = 'center';
   var scoreSelected = false;
   for (var i = 0; i < scores.length; i++) {
     if(!scoreSelected && scores[i].finalScore === score && scores[i].name === name){
@@ -219,8 +221,9 @@ function renderEndScreen(){
     else{
       ctx.fillStyle = '#000000';
     }
-    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, canvas.width / 2 - 60, 100 + 20 * i);
+    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300, 85 + 20 * i);
   }
+  ctx.strokeRect(200, 65, 200, 210);
 }
 function addWave(){
   var placement;
@@ -307,7 +310,7 @@ function handleKeydown(event){
     }
     break;
   case 38: // up
-    if(!startScreen && !gameEnd){
+    if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       start = true;
       burning = true;
