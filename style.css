@@ -9,8 +9,6 @@ canvas {
 }
 
 textarea {
-  margin-top: 300px;
-  margin-left: 50%;
   left: -80px;
   position: absolute;
   background-color: rgba(80, 80, 80, 0.5);

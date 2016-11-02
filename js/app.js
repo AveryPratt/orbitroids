@@ -2,7 +2,7 @@
 
 function checkcomplete(){
   for (var i = 0; i < asteroids.length; i++) {
-    if(asteroids[i].vel.origin.x < canvas.width && asteroids[i].vel.origin.y < canvas.height && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
+    if(asteroids[i].vel.origin.x < 600 * u && asteroids[i].vel.origin.y < 600 * u && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
       return false;
     }
   }
@@ -10,10 +10,10 @@ function checkcomplete(){
 }
 function launchBonus(placement, direction, diversion){
   if(placement){
-    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, canvas.width / 4, planet.vel.origin);
+    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
   }
   else {
-    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, canvas.width / 4, planet.vel.origin);
+    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
   }
   if(direction){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
@@ -24,19 +24,19 @@ function launchBonus(placement, direction, diversion){
   if(diversion){
     prograde += diversion * Math.PI / 2;
   }
-  var vel = vecCirc(prograde, 1.65 + Math.random() * .2 - .1, startingPointVec.head);
+  var vel = vecCirc(prograde, (findOrbitalVelocity(planet, startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
   bonus = new Bonus(vel);
 }
 function launchAsteroid(placement, direction, maxRadius){
   if(!start){
-    var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, canvas.width / 4, planet.vel.origin);
+    var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, 150 * u, planet.vel.origin);
   }
   else{
     if(placement){
-      startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, canvas.width / 4, planet.vel.origin);
+      startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
     }
     else {
-      startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, canvas.width / 4, planet.vel.origin);
+      startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
     }
   }
   if(direction){
@@ -45,12 +45,12 @@ function launchAsteroid(placement, direction, maxRadius){
   else{
     prograde = startingPointVec.forwardAngle - Math.PI / 2;
   }
-  var vel = vecCirc(prograde, 1.65, startingPointVec.head);
+  var vel = vecCirc(prograde, findOrbitalVelocity(planet, startingPointVec.len), startingPointVec.head);
   new Asteroid(vel, maxRadius);
 };
 function setShipTop(){
   start = false;
-  var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10)));
+  var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10 * u)));
   ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 }
 function reduceShots(num){
@@ -64,6 +64,7 @@ function reduceShots(num){
         indexToRemove = i;
       }
     }
+    console.log(Math.abs(shots[indexToRemove].vel.origin.x) + Math.abs(shots[indexToRemove].vel.origin.y));
     shots.splice(indexToRemove, 1);
   }
 }
@@ -81,22 +82,28 @@ function reduceAsteroids(num){
     asteroids.splice(indexToRemove, 1);
   }
 }
-(function setPlanet(){
-  planet = new Planet(400, canvas.width / 8, vecCart(new Point(0, 0), new Point(canvas.width / 2, canvas.height / 2)), 0, '#008000');
-}());
-setShipTop();
+function initializeNameInput(previousName){
+  if(previousName){
+    nameInput.value = previousName;
+  }
+}
+function setPlanet(){
+  planet = new Planet((Math.pow(75 * u, 2) / 14) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
+}
 
 function checkCollisions(){
-  checkShipEscaped();
-  checkShipPlanetCollision();
-  checkAsteroidShipCollision();
+  if(!gameEnd){
+    checkShipEscaped();
+    checkShipPlanetCollision();
+    checkAsteroidShipCollision();
+    if(bonus && bonus != 'start'){
+      checkBonusShipCollision();
+    }
+  }
   checkShotPlanetCollisions();
   checkShotAsteroidCollisions();
   checkAsteroidPlanetCollisions();
   checkShotShipCollisions();
-  if(bonus && bonus != 'start'){
-    checkBonusShipCollision();
-  }
 }
 function renderShip(){
   if(start && !paused){
@@ -109,17 +116,17 @@ function renderShip(){
     if(burning){
       ship.flame = true;
       if(dampenControls){
-        ship.burn(.01);
+        ship.burn(.02 * u);
       }
       else{
-        ship.burn(.1);
+        ship.burn(.1 * u);
       }
     }
     else{
       ship.flame = false;
     }
     if(dampenControls){
-      ship.rotate(rot / 10);
+      ship.rotate(rot / 5);
     }
     else{
       ship.rotate(rot);
@@ -134,7 +141,6 @@ function renderStartScreen(){
   name = sessionStorage.getItem('previousName');
   if(name && name != 'null'){
     initializeNameInput(name);
-    console.log(name);
     startScreen = false;
     requestAnimationFrame(renderFrame);
   }
@@ -177,20 +183,23 @@ function renderBonus(){
   }
 }
 function renderText(){
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = u;
+  ctx.strokeRect(0, 0, 600 * u, 600 * u);
   if(paused){
     ctx.fillStyle = '#000000';
-    ctx.font = '18px Arial';
+    ctx.font = 18 * u + 'px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Paused', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Paused', 300 * u, 300 * u);
   }
   ctx.strokeStyle = '#00ffff';
-  ctx.font = '12px Arial';
+  ctx.font = 12 * u + 'px Arial';
   ctx.textAlign = 'left';
-  ctx.strokeText('lives: ' + lives, 10, 18);
+  ctx.strokeText('LIVES: ' + lives, 10 * u, 18 * u);
 
   ctx.strokeStyle = '#ffff00';
   ctx.textAlign = 'right';
-  ctx.strokeText('score: ' + score, canvas.width - 10, 18);
+  ctx.strokeText('SCORE: ' + score, 590 * u, 18 * u);
 }
 function renderEndScreen(){
   if(newScore){
@@ -201,15 +210,15 @@ function renderEndScreen(){
     newScore = false;
   }
   ctx.fillStyle = 'rgba(255, 255, 255, .6)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, 600 * u, 600 * u);
   ctx.fillStyle = '#000000';
-  ctx.font = '24px Arial';
+  ctx.font = 24 * u + 'px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Game Over', canvas.width / 2, 60);
-  ctx.font = '12px Arial';
-  ctx.fillText('Press enter to play again', canvas.width / 2, 80);
-  ctx.font = '18px Arial';
-  ctx.textAlign = 'left';
+  ctx.fillText('Game Over', 300 * u, 60 * u);
+  ctx.font = 12 * u + 'px Arial';
+  ctx.fillText('Press enter to play again', 300 * u, 290 * u);
+  ctx.font = 18 * u + 'px Arial';
+  ctx.textAlign = 'center';
   var scoreSelected = false;
   for (var i = 0; i < scores.length; i++) {
     if(!scoreSelected && scores[i].finalScore === score && scores[i].name === name){
@@ -219,8 +228,10 @@ function renderEndScreen(){
     else{
       ctx.fillStyle = '#000000';
     }
-    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, canvas.width / 2 - 60, 100 + 20 * i);
+    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300 * u, (85 + 20 * i) * u);
   }
+  ctx.strokeStyle = '#ffffff';
+  ctx.strokeRect(200 * u, 65 * u, 200 * u, 210 * u);
 }
 function addWave(){
   var placement;
@@ -242,11 +253,22 @@ function addWave(){
   }
 }
 
-function initializeNameInput(previousName){
-  if(previousName){
-    nameInput.value = previousName;
+function setCanvas(){
+  if(window.innerWidth >= window.innerHeight){
+    ctx.canvas.width = window.innerHeight;
+    ctx.canvas.height = window.innerHeight;
+    u = window.innerHeight / 600;
+  }
+  else{
+    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.height = window.innerWidth;
+    u = window.innerWidth / 600;
   }
 }
+function setTextarea(){
+  nameInput.style.margin = 300 * u + 'px 50%';
+}
+
 function renderFrame(){
   if(startScreen || gameEnd){
     nameInput.style.display = 'block';
@@ -259,7 +281,7 @@ function renderFrame(){
   }
   else{
     requestAnimationFrame(renderFrame);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, 600 * u, 600 * u);
     planet.draw();
     if(!paused){
       checkCollisions();
@@ -273,15 +295,20 @@ function renderFrame(){
         addWave();
       }
     }
-    renderText();
     renderAsteroids();
     renderShots();
     renderBonus();
+    renderText();
 
     reduceShots(maxShots);
     reduceAsteroids(maxAsteroids);
   }
 }
+
+setCanvas();
+setTextarea();
+setPlanet();
+setShipTop();
 renderFrame();
 function handleKeydown(event){
   switch(event.keyCode){
@@ -307,7 +334,7 @@ function handleKeydown(event){
     }
     break;
   case 38: // up
-    if(!startScreen && !gameEnd){
+    if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       start = true;
       burning = true;

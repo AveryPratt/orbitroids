@@ -1,6 +1,7 @@
 'use strict';
 
 var canvas = document.getElementById('canvas');
+var u;
 var ctx = canvas.getContext('2d');
 var name;
 var start = false;
@@ -22,7 +23,7 @@ var startScreen = true;
 var score = 0;
 var bonus = 'start';
 var paused = false;
-var maxShots = 50;
+var maxShots = 30;
 var maxAsteroids = 20;
 
 var scores = [];

@@ -1,7 +1,7 @@
 'use strict';
 
 var checkShipEscaped = function(){
-  if(ship.vel.origin.x <= 0 || ship.vel.origin.x >= canvas.width || ship.vel.origin.y <= 0 || ship.vel.origin.y >= canvas.height){
+  if(ship.vel.origin.x <= 0 || ship.vel.origin.x >= 600 * u || ship.vel.origin.y <= 0 || ship.vel.origin.y >= 600 * u){
     exploded = true;
   }
 }
@@ -35,7 +35,7 @@ var checkAsteroidPlanetCollisions = function(){
 var checkAsteroidShipCollision = function(){
   if(!exploded){
     for (var i = 0; i < asteroids.length; i++) {
-      if(vecCart(new Point(ship.vel.origin.x - asteroids[i].vel.origin.x, ship.vel.origin.y - asteroids[i].vel.origin.y)).len < asteroids[i].maxRadius + 10){
+      if(vecCart(new Point(ship.vel.origin.x - asteroids[i].vel.origin.x, ship.vel.origin.y - asteroids[i].vel.origin.y)).len < asteroids[i].maxRadius + 10 * u){
         var noseVec = vecCart(new Point(ship.nose.head.x - asteroids[i].vel.origin.x, ship.nose.head.y - asteroids[i].vel.origin.y), asteroids[i].vel.origin);
         var leftSideVec = vecCart(new Point(ship.leftSide.head.x - asteroids[i].vel.origin.x, ship.leftSide.head.y - asteroids[i].vel.origin.y), asteroids[i].vel.origin);
         var rightSideVec = vecCart(new Point(ship.rightSide.head.x - asteroids[i].vel.origin.x, ship.rightSide.head.y - asteroids[i].vel.origin.y), asteroids[i].vel.origin);
@@ -57,7 +57,7 @@ var checkAsteroidShipCollision = function(){
         }
         if(!exploded){
           for (var j = 0; j < asteroidVecs.length; j++) {
-            if(asteroidVecs[j].len <= 10){
+            if(asteroidVecs[j].len <= 10 * u){
               if(checkPointInsidePolygon(asteroidVecs[j].head, shipVecs)){
                 exploded = true;
                 explodeAsteroid(i);
@@ -90,7 +90,7 @@ var checkShotAsteroidCollisions = function(){
 };
 var checkShotShipCollisions = function(){
   for (var i = 0; i < shots.length; i++) {
-    if(vecCart(new Point(ship.vel.origin.x - shots[i].vel.origin.x, ship.vel.origin.y - shots[i].vel.origin.y)).len < 10){
+    if(vecCart(new Point(ship.vel.origin.x - shots[i].vel.origin.x, ship.vel.origin.y - shots[i].vel.origin.y)).len < 10 * u){
       var noseVec = vecCart(new Point(ship.nose.head.x - shots[i].vel.origin.x, ship.nose.head.y - shots[i].vel.origin.y), shots[i].vel.origin);
       var leftSideVec = vecCart(new Point(ship.leftSide.head.x - shots[i].vel.origin.x, ship.leftSide.head.y - shots[i].vel.origin.y), shots[i].vel.origin);
       var rightSideVec = vecCart(new Point(ship.rightSide.head.x - shots[i].vel.origin.x, ship.rightSide.head.y - shots[i].vel.origin.y), shots[i].vel.origin);
@@ -132,7 +132,7 @@ var checkPointInsidePolygon = function(point, vecArr){
 };
 var checkBonusShipCollision = function(){
   var dist = vecCart(new Point(bonus.vel.origin.x - ship.vel.origin.x, bonus.vel.origin.y - ship.vel.origin.y), bonus.vel.origin).len;
-  if(dist < 10){
+  if(dist < 10 * u){
     if(lives === 3){
       invincible = true;
       if(!gameEnd){
@@ -154,13 +154,13 @@ var removeShot = function(index){
   shotRemoveArr = [];
 };
 var explodeAsteroid = function(index, tangentAngle){
-  if(asteroids[index].maxRadius >= 10){
+  if(asteroids[index].maxRadius >= 10 * u){
     var parentAsteroid = asteroids[index];
     asteroids.splice(index, 1);
     var rad1 = newRad(parentAsteroid.maxRadius);
     var rad2 = newRad(parentAsteroid.maxRadius);
-    var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, .25 + 1 / rad1));
-    var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, .25 + 1 / rad2));
+    var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, u * (.25 + 1 / (rad1 / u))));
+    var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, u * (.25 + 1 / (rad2 / u))));
     if(tangentAngle){
       var bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
       newVec1 = addVectors(newVec1, bounce);

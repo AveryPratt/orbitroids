@@ -136,3 +136,6 @@ function addVectors(vec1, vec2){
   var origin = new Point(vec1.origin.x, vec1.origin.y);
   return vecCart(delta, origin, vec1.deltaRot);
 }
+function findOrbitalVelocity(parentBody, dist){
+  return Math.pow(parentBody.mass * (1 / dist), .5);
+}
