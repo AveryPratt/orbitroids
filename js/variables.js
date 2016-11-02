@@ -1,7 +1,12 @@
 'use strict';
 
 var canvas = document.getElementById('canvas');
-var u = 600 / canvas.height;
+if(canvas.height <= canvas.width){
+  var u = canvas.height / 600;
+}
+else{
+  u = canvas.width / 600;
+}
 var ctx = canvas.getContext('2d');
 var name;
 var start = false;

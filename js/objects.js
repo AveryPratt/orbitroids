@@ -35,7 +35,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
   if(col){this.col = col;}
   else{this.col = '#ffffff';}
 
-  this.trueAnom;
+  this.trueAnom = 0;
 
   this.accel = vecCirc();
 
@@ -52,17 +52,17 @@ function Ship(forwardAngle, deltaRot, vel, col){
       else if(this.explosionCount > 0){
         this.explosionCount -= 1;
         ctx.beginPath();
-        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 3.3, 0, 2 * Math.PI, false);
+        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 3.3, 0, 2 * Math.PI, false);
         ctx.fillStyle = '#ff0000';
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 5, 0, 2 * Math.PI, false);
+        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 5, 0, 2 * Math.PI, false);
         ctx.fillStyle = '#ff8000';
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount / 10, 0, 2 * Math.PI, false);
+        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 10, 0, 2 * Math.PI, false);
         ctx.fillStyle = '#ffff00';
         ctx.fill();
       }
@@ -87,7 +87,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
       ctx.lineTo(this.vel.origin.x, this.vel.origin.y);
       ctx.lineTo(this.rightSide.head.x, this.rightSide.head.y);
       ctx.closePath();
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 * u;
       ctx.strokeStyle = col;
       ctx.stroke();
       if(this.flame){
@@ -101,7 +101,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
         ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult));
         ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult));
         ctx.closePath();
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1 * u;
         ctx.fillStyle = '#ff0000';
         ctx.fill();
 
@@ -111,18 +111,18 @@ function Ship(forwardAngle, deltaRot, vel, col){
         ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * mult));
         ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult));
         ctx.closePath();
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1 * u;
         ctx.fillStyle = '#ffff00';
         ctx.fill();
       }
     }
   };
   this.alignPoints = function(){
-    this.nose = vecCirc(this.forwardAngle, 10, this.vel.origin);
-    this.rear = vecCirc(this.forwardAngle - Math.PI, 10, this.vel.origin);
-    this.leftSide = vecCirc(this.forwardAngle + 5 * Math.PI / 6, 10, this.vel.origin);
+    this.nose = vecCirc(this.forwardAngle, 10 * u, this.vel.origin);
+    this.rear = vecCirc(this.forwardAngle - Math.PI, 10 * u, this.vel.origin);
+    this.leftSide = vecCirc(this.forwardAngle + 5 * Math.PI / 6, 10 * u, this.vel.origin);
     this.leftSide.refineForwardAngle();
-    this.rightSide = vecCirc(this.forwardAngle + 7 * Math.PI / 6, 10, this.vel.origin);
+    this.rightSide = vecCirc(this.forwardAngle + 7 * Math.PI / 6, 10 * u, this.vel.origin);
     this.rightSide.refineForwardAngle();
   };
   this.rotate = function(accelRot){
@@ -137,6 +137,9 @@ function Ship(forwardAngle, deltaRot, vel, col){
     this.vel = addVectors(this.vel, this.accel);
     this.vel = vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
     this.trueAnom = vecCart(new Point(planet.vel.origin.x - this.vel.origin.x, planet.vel.origin.y - this.vel.origin.y), planet.origin);
+    if(!this.trueAnom.forwardAngle){
+      this.trueAnom.forwardAngle = 0;
+    }
     this.alignPoints();
   };
   this.burn = function(force){
@@ -144,8 +147,8 @@ function Ship(forwardAngle, deltaRot, vel, col){
     this.accel = addVectors(this.accel, forceVec);
   };
   this.shoot = function(){
-    this.accel = addVectors(this.accel, vecCirc(this.forwardAngle - Math.PI, .5));
-    var projection = addVectors(vecCirc(this.forwardAngle, 2.5, this.nose.head), this.vel);
+    this.accel = addVectors(this.accel, vecCirc(this.forwardAngle - Math.PI, .5 * u));
+    var projection = addVectors(vecCirc(this.forwardAngle, 2.5 * u, this.nose.head), this.vel);
     new Shot(projection);
   };
   this.alignPoints();
@@ -155,7 +158,7 @@ function Shot(vel){
   this.vel = vel;
   this.draw = function(){
     ctx.beginPath();
-    ctx.arc(this.vel.origin.x, this.vel.origin.y, 1.5, 0, 2 * Math.PI, false);
+    ctx.arc(this.vel.origin.x, this.vel.origin.y, 1.5 * u, 0, 2 * Math.PI, false);
     ctx.fillStyle = '#ffcc00';
     ctx.fill();
   };
@@ -167,7 +170,7 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
   else{this.vel = vecCirc();}
 
   if(maxRadius){this.maxRadius = maxRadius;}
-  else{this.maxRadius = Math.random() * 20 + 20;}
+  else{this.maxRadius = (Math.random() * 20 + 20) * u;}
 
   if(roughness){this.roughness = roughness;}
   else{this.roughness = .5;}
@@ -217,12 +220,12 @@ function Bonus(vel){
   this.alignPoints = function(){
     if(lives === 3){
       for (var i = 0; i < 5; i++) {
-        this.points[i] = vecCirc(Math.PI + i * 2 * Math.PI / 5, 5, this.vel.origin);
+        this.points[i] = vecCirc(Math.PI + i * 2 * Math.PI / 5, 5 * u, this.vel.origin);
       }
     }
     else{
       for (var i = 0; i < 4; i++) {
-        this.points[i] = vecCirc(Math.PI + i * Math.PI / 2, 5, this.vel.origin);
+        this.points[i] = vecCirc(Math.PI + i * Math.PI / 2, 5 * u, this.vel.origin);
       }
     }
   };
@@ -245,9 +248,9 @@ function Bonus(vel){
       ctx.moveTo(this.points[1].head.x, this.points[1].head.y);
       ctx.lineTo(this.points[3].head.x, this.points[3].head.y);
       ctx.strokeStyle = '#00ffff';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3 * u;
       ctx.stroke();
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 * u;
     }
   };
 }
