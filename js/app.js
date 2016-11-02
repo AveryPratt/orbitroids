@@ -82,10 +82,14 @@ function reduceAsteroids(num){
     asteroids.splice(indexToRemove, 1);
   }
 }
-(function setPlanet(){
+function initializeNameInput(previousName){
+  if(previousName){
+    nameInput.value = previousName;
+  }
+}
+function setPlanet(){
   planet = new Planet((Math.pow(75 * u, 2) / 14) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
-}());
-setShipTop();
+}
 
 function checkCollisions(){
   if(!gameEnd){
@@ -179,20 +183,23 @@ function renderBonus(){
   }
 }
 function renderText(){
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = u;
+  ctx.strokeRect(0, 0, 600 * u, 600 * u);
   if(paused){
     ctx.fillStyle = '#000000';
-    ctx.font = '18px Arial';
+    ctx.font = 18 * u + 'px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('Paused', 300 * u, 300 * u);
   }
   ctx.strokeStyle = '#00ffff';
-  ctx.font = '12px Arial';
+  ctx.font = 12 * u + 'px Arial';
   ctx.textAlign = 'left';
-  ctx.strokeText('lives: ' + lives, 10 * u, 18 * u);
+  ctx.strokeText('LIVES: ' + lives, 10 * u, 18 * u);
 
   ctx.strokeStyle = '#ffff00';
   ctx.textAlign = 'right';
-  ctx.strokeText('score: ' + score, 590 * u, 18 * u);
+  ctx.strokeText('SCORE: ' + score, 590 * u, 18 * u);
 }
 function renderEndScreen(){
   if(newScore){
@@ -205,12 +212,12 @@ function renderEndScreen(){
   ctx.fillStyle = 'rgba(255, 255, 255, .6)';
   ctx.fillRect(0, 0, 600 * u, 600 * u);
   ctx.fillStyle = '#000000';
-  ctx.font = '24px Arial';
+  ctx.font = 24 * u + 'px Arial';
   ctx.textAlign = 'center';
   ctx.fillText('Game Over', 300 * u, 60 * u);
-  ctx.font = '12px Arial';
+  ctx.font = 12 * u + 'px Arial';
   ctx.fillText('Press enter to play again', 300 * u, 290 * u);
-  ctx.font = '18px Arial';
+  ctx.font = 18 * u + 'px Arial';
   ctx.textAlign = 'center';
   var scoreSelected = false;
   for (var i = 0; i < scores.length; i++) {
@@ -223,6 +230,7 @@ function renderEndScreen(){
     }
     ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300 * u, (85 + 20 * i) * u);
   }
+  ctx.strokeStyle = '#ffffff';
   ctx.strokeRect(200 * u, 65 * u, 200 * u, 210 * u);
 }
 function addWave(){
@@ -245,11 +253,22 @@ function addWave(){
   }
 }
 
-function initializeNameInput(previousName){
-  if(previousName){
-    nameInput.value = previousName;
+function setCanvas(){
+  if(window.innerWidth >= window.innerHeight){
+    ctx.canvas.width = window.innerHeight;
+    ctx.canvas.height = window.innerHeight;
+    u = window.innerHeight / 600;
+  }
+  else{
+    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.height = window.innerWidth;
+    u = window.innerWidth / 600;
   }
 }
+function setTextarea(){
+  nameInput.style.margin = 300 * u + 'px 50%';
+}
+
 function renderFrame(){
   if(startScreen || gameEnd){
     nameInput.style.display = 'block';
@@ -276,15 +295,20 @@ function renderFrame(){
         addWave();
       }
     }
-    renderText();
     renderAsteroids();
     renderShots();
     renderBonus();
+    renderText();
 
     reduceShots(maxShots);
     reduceAsteroids(maxAsteroids);
   }
 }
+
+setCanvas();
+setTextarea();
+setPlanet();
+setShipTop();
 renderFrame();
 function handleKeydown(event){
   switch(event.keyCode){

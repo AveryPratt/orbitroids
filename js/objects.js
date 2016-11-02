@@ -183,7 +183,7 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
 
   this.arms = [];
   this.armLengths = [];
-  for (var i = 0; i < 1 + Math.sqrt(this.maxRadius); i++) {
+  for (var i = 0; i < 1 + Math.sqrt(this.maxRadius / u); i++) {
     this.armLengths[i] = this.maxRadius - Math.random() * this.maxRadius * this.roughness;
   }
   this.alignPoints = function(){
