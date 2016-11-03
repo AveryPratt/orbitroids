@@ -255,3 +255,32 @@ function Bonus(vel){
   };
 }
 Bonus.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
+function Deposit(location, addedPoints, size, rgbVals, frameCount){
+  this.origin = location, addedPoints;
+  this.addedPoints = addedPoints;
+  this.size = size;
+  this.rgbVals = rgbVals;
+  this.frameCount = frameCount;
+  this.totalCount = frameCount;
+  this.draw = function(){
+    ctx.fillStyle = 'rgba(' + rgbVals + ', ' + this.frameCount / this.totalCount + ')';
+    ctx.font = size * u + 'px Arial';
+    ctx.textAlign = 'center';
+    if(addedPoints >= 0){
+      ctx.fillText('+' + addedPoints, this.origin.x, this.origin.y);
+    }
+    else{
+      ctx.fillText(addedPoints, this.origin.x, this.origin.y);
+    }
+    this.frameCount -= 1;
+    if(this.frameCount < 0){
+      for (var i = 0; i < deposits.length; i++) {
+        if(deposits[i].origin.x === this.origin.x && deposits[i].origin.y === this.origin.y){
+          deposits.splice(i, 1);
+          break;
+        }
+      }
+    }
+  }
+  deposits.push(this);
+}

@@ -11,7 +11,7 @@ canvas {
 textarea {
   left: -80px;
   position: absolute;
-  background-color: rgba(80, 80, 80, 0.5);
+  background-color: rgba(64, 64, 64, 0.5);
   color: #ffffff;
   border: none;
   resize: none;

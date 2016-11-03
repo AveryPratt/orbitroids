@@ -1,5 +1,68 @@
 'use strict';
 
+var canvas,
+  u,
+  ctx,
+  name,
+  start,
+  launched,
+  burning,
+  dampenControls,
+  rot,
+  loaded,
+  asteroids,
+  shots,
+  deposits,
+  shotRemoveArr,
+  exploded,
+  lives,
+  invincible,
+  planet,
+  ship,
+  gameEnd,
+  startScreen,
+  score,
+  bonus,
+  paused,
+  maxShots,
+  maxAsteroids,
+  scores,
+  scoreNumber,
+  newScore,
+  nameInput;
+
+function init(){
+  canvas = document.getElementById('canvas');
+  ctx = canvas.getContext('2d');
+  start = false;
+  launched = false;
+  burning = false;
+  dampenControls = false;
+  rot = 0;
+  loaded = false;
+  asteroids = [];
+  shots = [];
+  deposits = [];
+  shotRemoveArr = [];
+  exploded = false;
+  lives = 3;
+  gameEnd = false;
+  startScreen = true;
+  score = 0;
+  bonus = 'start';
+  paused = false;
+  maxShots = 30;
+  maxAsteroids = 20;
+
+  scores = [];
+  scoreNumber = 10;
+  newScore = true;
+  nameInput = document.getElementById('nameInput');
+  setCanvas();
+  setTextarea();
+  setPlanet();
+  setShipTop();
+}
 function checkcomplete(){
   for (var i = 0; i < asteroids.length; i++) {
     if(asteroids[i].vel.origin.x < 600 * u && asteroids[i].vel.origin.y < 600 * u && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
@@ -64,7 +127,6 @@ function reduceShots(num){
         indexToRemove = i;
       }
     }
-    console.log(Math.abs(shots[indexToRemove].vel.origin.x) + Math.abs(shots[indexToRemove].vel.origin.y));
     shots.splice(indexToRemove, 1);
   }
 }
@@ -88,7 +150,7 @@ function initializeNameInput(previousName){
   }
 }
 function setPlanet(){
-  planet = new Planet((Math.pow(75 * u, 2) / 14) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
+  planet = new Planet((Math.pow(75 * u, 2) / 10) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
 }
 
 function checkCollisions(){
@@ -162,6 +224,11 @@ function renderAsteroids(){
     asteroids[i].draw();
   }
 }
+function renderDeposits(){
+  for (var i = 0; i < deposits.length; i++) {
+    deposits[i].draw();
+  }
+}
 function renderShots(){
   for (var i = 0; i < shots.length; i++) {
     if(!paused){
@@ -209,14 +276,14 @@ function renderEndScreen(){
     storeScores();
     newScore = false;
   }
-  ctx.fillStyle = 'rgba(255, 255, 255, .6)';
-  ctx.fillRect(0, 0, 600 * u, 600 * u);
+  ctx.fillStyle = 'rgba(255, 255, 255, .5)';
+  ctx.fillRect(150 * u, 100 * u, 300 * u, 400 * u);
   ctx.fillStyle = '#000000';
   ctx.font = 24 * u + 'px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Game Over', 300 * u, 60 * u);
+  ctx.fillText('Game Over', 300 * u, 140 * u);
   ctx.font = 12 * u + 'px Arial';
-  ctx.fillText('Press enter to play again', 300 * u, 290 * u);
+  ctx.fillText('Press enter to play again', 300 * u, 370 * u);
   ctx.font = 18 * u + 'px Arial';
   ctx.textAlign = 'center';
   var scoreSelected = false;
@@ -228,10 +295,10 @@ function renderEndScreen(){
     else{
       ctx.fillStyle = '#000000';
     }
-    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300 * u, (85 + 20 * i) * u);
+    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300 * u, (165 + 20 * i) * u);
   }
   ctx.strokeStyle = '#ffffff';
-  ctx.strokeRect(200 * u, 65 * u, 200 * u, 210 * u);
+  ctx.strokeRect(200 * u, 145 * u, 200 * u, 210 * u);
 }
 function addWave(){
   var placement;
@@ -266,7 +333,7 @@ function setCanvas(){
   }
 }
 function setTextarea(){
-  nameInput.style.margin = 300 * u + 'px 50%';
+  nameInput.style.margin = 400 * u + 'px 50%';
 }
 
 function renderFrame(){
@@ -296,6 +363,7 @@ function renderFrame(){
       }
     }
     renderAsteroids();
+    renderDeposits();
     renderShots();
     renderBonus();
     renderText();
@@ -305,37 +373,6 @@ function renderFrame(){
   }
 }
 
-function init(){
-  canvas = document.getElementById('canvas');
-  ctx = canvas.getContext('2d');
-  start = false;
-  launched = false;
-  burning = false;
-  dampenControls = false;
-  rot = 0;
-  loaded = false;
-  asteroids = [];
-  shots = [];
-  shotRemoveArr = [];
-  exploded = false;
-  lives = 3;
-  gameEnd = false;
-  startScreen = true;
-  score = 0;
-  bonus = 'start';
-  paused = false;
-  maxShots = 30;
-  maxAsteroids = 20;
-
-  scores = [];
-  scoreNumber = 10;
-  newScore = true;
-  nameInput = document.getElementById('nameInput');
-  setCanvas();
-  setTextarea();
-  setPlanet();
-  setShipTop();
-}
 function handleKeydown(event){
   switch(event.keyCode){
   case 13: // enter
@@ -347,6 +384,7 @@ function handleKeydown(event){
       renderFrame();
     }
     else if(gameEnd){
+      nameInput.focus = true;
       event.preventDefault();
       name = nameInput.value;
       sessionStorage.setItem('previousName', name);
