@@ -12,7 +12,7 @@ var canvas,
   loaded,
   asteroids,
   shots,
-  deposits,
+  faders,
   shotRemoveArr,
   exploded,
   lives,
@@ -29,8 +29,14 @@ var canvas,
   scores,
   scoreNumber,
   newScore,
-  nameInput;
+  nameInput,
+  sunAngle;
 
+function initializeNameInput(previousName){
+  if(previousName){
+    nameInput.value = previousName;
+  }
+}
 function init(){
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
@@ -42,7 +48,7 @@ function init(){
   loaded = false;
   asteroids = [];
   shots = [];
-  deposits = [];
+  faders = [];
   shotRemoveArr = [];
   exploded = false;
   lives = 3;
@@ -58,37 +64,19 @@ function init(){
   scoreNumber = 10;
   newScore = true;
   nameInput = document.getElementById('nameInput');
+  sunAngle = Math.PI / 2;
   setCanvas();
   setTextarea();
   setPlanet();
   setShipTop();
 }
-function checkcomplete(){
-  for (var i = 0; i < asteroids.length; i++) {
-    if(asteroids[i].vel.origin.x < 600 * u && asteroids[i].vel.origin.y < 600 * u && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
-      return false;
-    }
-  }
-  return true;
+function setPlanet(){
+  planet = new Planet((Math.pow(75 * u, 2) / 15) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
 }
-function launchBonus(placement, direction, diversion){
-  if(placement){
-    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
-  }
-  else {
-    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
-  }
-  if(direction){
-    var prograde = startingPointVec.forwardAngle + Math.PI / 2;
-  }
-  else{
-    prograde = startingPointVec.forwardAngle - Math.PI / 2;
-  }
-  if(diversion){
-    prograde += diversion * Math.PI / 2;
-  }
-  var vel = vecCirc(prograde, (findOrbitalVelocity(planet, startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
-  bonus = new Bonus(vel);
+function setShipTop(){
+  start = false;
+  var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10 * u)));
+  ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 }
 function launchAsteroid(placement, direction, maxRadius){
   if(!start){
@@ -111,10 +99,24 @@ function launchAsteroid(placement, direction, maxRadius){
   var vel = vecCirc(prograde, findOrbitalVelocity(planet, startingPointVec.len), startingPointVec.head);
   new Asteroid(vel, maxRadius);
 };
-function setShipTop(){
-  start = false;
-  var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10 * u)));
-  ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
+function launchBonus(placement, direction, diversion){
+  if(placement){
+    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+  }
+  else {
+    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+  }
+  if(direction){
+    var prograde = startingPointVec.forwardAngle + Math.PI / 2;
+  }
+  else{
+    prograde = startingPointVec.forwardAngle - Math.PI / 2;
+  }
+  if(diversion){
+    prograde += diversion * Math.PI / 2;
+  }
+  var vel = vecCirc(prograde, (findOrbitalVelocity(planet, startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
+  bonus = new Bonus(vel);
 }
 function reduceShots(num){
   if(shots.length > num){
@@ -144,13 +146,24 @@ function reduceAsteroids(num){
     asteroids.splice(indexToRemove, 1);
   }
 }
-function initializeNameInput(previousName){
-  if(previousName){
-    nameInput.value = previousName;
+function expireFaders(){
+  var removeFaders = [];
+  for (var i = 0; i < faders.length; i++) {
+    if(faders[i].frameCount <= 0){
+      removeFaders.push(i);
+    }
+  }
+  for (var i = removeFaders.length - 1; i >= 0; i--) {
+    faders.splice(removeFaders[i], 1);
   }
 }
-function setPlanet(){
-  planet = new Planet((Math.pow(75 * u, 2) / 10) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
+function checkcomplete(){
+  for (var i = 0; i < asteroids.length; i++) {
+    if(asteroids[i].vel.origin.x < 600 * u && asteroids[i].vel.origin.y < 600 * u && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
+      return false;
+    }
+  }
+  return true;
 }
 
 function checkCollisions(){
@@ -224,9 +237,9 @@ function renderAsteroids(){
     asteroids[i].draw();
   }
 }
-function renderDeposits(){
-  for (var i = 0; i < deposits.length; i++) {
-    deposits[i].draw();
+function renderFaders(){
+  for (var i = 0; i < faders.length; i++) {
+    faders[i].draw();
   }
 }
 function renderShots(){
@@ -276,7 +289,7 @@ function renderEndScreen(){
     storeScores();
     newScore = false;
   }
-  ctx.fillStyle = 'rgba(255, 255, 255, .5)';
+  ctx.fillStyle = 'rgba(255, 255, 255, .2)';
   ctx.fillRect(150 * u, 100 * u, 300 * u, 400 * u);
   ctx.fillStyle = '#000000';
   ctx.font = 24 * u + 'px Arial';
@@ -349,6 +362,7 @@ function renderFrame(){
   else{
     requestAnimationFrame(renderFrame);
     ctx.clearRect(0, 0, 600 * u, 600 * u);
+    sunAngle += .0005;
     planet.draw();
     if(!paused){
       checkCollisions();
@@ -363,13 +377,14 @@ function renderFrame(){
       }
     }
     renderAsteroids();
-    renderDeposits();
+    renderFaders();
     renderShots();
     renderBonus();
     renderText();
 
     reduceShots(maxShots);
     reduceAsteroids(maxAsteroids);
+    expireFaders();
   }
 }
 
@@ -398,6 +413,7 @@ function handleKeydown(event){
     }
     break;
   case 38: // up
+  case 87: // w
     if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       start = true;
@@ -405,13 +421,15 @@ function handleKeydown(event){
     }
     break;
   case 37: // left
-    if(!gameEnd){
+  case 65: // a
+    if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       rot = .003;
     }
     break;
   case 39: // right
-    if(!gameEnd){
+  case 68: // d
+    if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       rot = -.003;
     }
@@ -446,12 +464,15 @@ function handleKeyup(event){
     dampenControls = false;
     break;
   case 38: // up
+  case 87: // w
     burning = false;
     break;
   case 37: // left
+  case 65: // a
     rot = 0;
     break;
   case 39: // right
+  case 68: // d
     rot = 0;
     break;
   default:

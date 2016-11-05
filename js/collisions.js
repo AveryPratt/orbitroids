@@ -11,7 +11,7 @@ var checkShipPlanetCollision = function(){
   var rightSideVec = vecCart(new Point(planet.vel.origin.x - ship.rightSide.head.x, planet.vel.origin.y - ship.rightSide.head.y), planet.vel.origin);
   if(noseVec.len <= planet.radius || leftSideVec.len <= planet.radius || rightSideVec.len <= planet.radius){
     exploded = true;
-    new Deposit(ship.vel.origin, -1, 12, '255, 0, 0', 100);
+    new Fader(ship.vel.origin, 12, '255, 0, 0', 100, '-1');
   }
 };
 var checkShotPlanetCollisions = function(){
@@ -29,7 +29,7 @@ var checkAsteroidPlanetCollisions = function(){
       if(!gameEnd){
         var added = Math.round(100 * u / asteroids[i].maxRadius);
         score += added;
-        new Deposit(asteroids[i].vel.origin, added, 8, '255, 255, 0', 50);
+        new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
       }
       explodeAsteroid(i, distVec.forwardAngle);
     }
@@ -51,11 +51,11 @@ var checkAsteroidShipCollision = function(){
           if(shipVecs[j].len <= asteroids[i].maxRadius){
             if(checkPointInsidePolygon(shipVecs[j].head, asteroidVecs)){
               exploded = true;
-              new Deposit(ship.vel.origin, -1, 12, '255, 0, 0', 100);
+              new Fader(ship.vel.origin, 12, '255, 0, 0', 100, '-1');
               if(!gameEnd){
                 var added = Math.round(100 * u / asteroids[i].maxRadius);
                 score += added;
-                new Deposit(asteroids[i].vel.origin, added, 8, '255, 255, 0', 50);
+                new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
               }
               explodeAsteroid(i);
             }
@@ -66,11 +66,11 @@ var checkAsteroidShipCollision = function(){
             if(asteroidVecs[j].len <= 10 * u){
               if(checkPointInsidePolygon(asteroidVecs[j].head, shipVecs)){
                 exploded = true;
-                new Deposit(ship.vel.origin, -1, 12, '255, 0, 0', 100);
+                new Fader(ship.vel.origin, 12, '255, 0, 0', 100, '-1');
                 if(!gameEnd){
                   added = Math.round(100 * u / asteroids[i].maxRadius);
                   score += added;
-                  new Deposit(asteroids[i].vel.origin, added, 8, '255, 255, 0', 50);
+                  new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
                 }
                 explodeAsteroid(i);
               }
@@ -90,7 +90,7 @@ var checkShotAsteroidCollisions = function(){
           if(!gameEnd){
             var added = Math.round(100 * u / asteroids[i].maxRadius) * 10;
             score += added;
-            new Deposit(asteroids[i].vel.origin, added, 8, '255, 255, 0', 50);
+            new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
           }
           explodeAsteroid(i);
           removeShot(j);
@@ -108,7 +108,7 @@ var checkShotShipCollisions = function(){
       var shipVecs = [noseVec, leftSideVec, rightSideVec];
       if(checkPointInsidePolygon(shots[i].vel.origin, shipVecs)){
         exploded = true;
-        new Deposit(ship.vel.origin, -1, 12, '255, 0, 0', 100);
+        new Fader(ship.vel.origin, 12, '255, 0, 0', 100, '-1');
         removeShot(i);
       }
     }
@@ -149,12 +149,12 @@ var checkBonusShipCollision = function(){
       invincible = true;
       if(!gameEnd){
         score += 1000;
-        new Deposit(bonus.vel.origin, 1000, 12, '255, 255, 0', 100);
+        new Fader(bonus.vel.origin, 12, '255, 255, 0', 100, '1000');
       }
     }
     else{
       lives += 1;
-      new Deposit(bonus.vel.origin, 1, 12, '0, 255, 255', 100);
+      new Fader(bonus.vel.origin, 12, '0, 255, 255', 100, '+1');
     }
     bonus = null;
   }

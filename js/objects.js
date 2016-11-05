@@ -14,8 +14,19 @@ function Planet(mass, radius, vel, deltaRot, col){
   this.mass = mass;
   this.draw = function(){
     ctx.beginPath();
+    var planetSunVec = vecCirc(sunAngle, this.radius * .8, this.vel.origin);
+    var planetGrd = ctx.createRadialGradient(planetSunVec.head.x, planetSunVec.head.y, 0, planetSunVec.head.x, planetSunVec.head.y, this.radius * 1.2);
+    planetGrd.addColorStop(0, 'rgba(255, 127, 0, 1)');
+    planetGrd.addColorStop(1, 'rgba(12, 0, 12, 1)');
     ctx.arc(this.vel.origin.x, this.vel.origin.y, radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = col;
+    ctx.fillStyle = planetGrd;
+    ctx.fill();
+    var atmoSunVec = vecCirc(sunAngle, this.radius, this.vel.origin);
+    var atmoGrd = ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, this.vel.origin.x, this.vel.origin.y, this.radius * 1.2);
+    atmoGrd.addColorStop(0, 'rgba(127, 127, 255, .7)');
+    atmoGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.arc(this.vel.origin.x, this.vel.origin.y, radius * 1.2, 0, 2 * Math.PI, false);
+    ctx.fillStyle = atmoGrd;
     ctx.fill();
   };
 }
@@ -50,7 +61,9 @@ function Ship(forwardAngle, deltaRot, vel, col){
         this.explosionCount = 50;
       }
       else if(this.explosionCount > 0){
-        this.explosionCount -= 1;
+        if(!paused){
+          this.explosionCount -= 1;
+        }
         ctx.beginPath();
         ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 3.3, 0, 2 * Math.PI, false);
         ctx.fillStyle = '#ff0000';
@@ -159,8 +172,11 @@ function Shot(vel){
   this.draw = function(){
     ctx.beginPath();
     ctx.arc(this.vel.origin.x, this.vel.origin.y, 1.5 * u, 0, 2 * Math.PI, false);
-    ctx.fillStyle = '#ffcc00';
+    ctx.fillStyle = '#ffffff';
     ctx.fill();
+    if(!paused){
+      new Fader(this.vel.origin, 1 * u, '127, 0, 127', 5, 'circ');
+    }
   };
   shots.push(this);
 }
@@ -255,32 +271,28 @@ function Bonus(vel){
   };
 }
 Bonus.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
-function Deposit(location, addedPoints, size, rgbVals, frameCount){
-  this.origin = location, addedPoints;
-  this.addedPoints = addedPoints;
+function Fader(location, size, rgbVals, frameCount, message){
+  this.origin = location;
+  this.message = message;
   this.size = size;
   this.rgbVals = rgbVals;
   this.frameCount = frameCount;
   this.totalCount = frameCount;
   this.draw = function(){
     ctx.fillStyle = 'rgba(' + rgbVals + ', ' + this.frameCount / this.totalCount + ')';
-    ctx.font = size * u + 'px Arial';
-    ctx.textAlign = 'center';
-    if(addedPoints >= 0){
-      ctx.fillText('+' + addedPoints, this.origin.x, this.origin.y);
+    if(message === 'circ'){
+      ctx.beginPath();
+      ctx.arc(this.origin.x, this.origin.y, size, 0, 2 * Math.PI, false);
+      ctx.fill();
     }
-    else{
-      ctx.fillText(addedPoints, this.origin.x, this.origin.y);
+    else if(typeof message === 'string'){
+      ctx.font = size * u + 'px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(message, this.origin.x, this.origin.y);
     }
-    this.frameCount -= 1;
-    if(this.frameCount < 0){
-      for (var i = 0; i < deposits.length; i++) {
-        if(deposits[i].origin.x === this.origin.x && deposits[i].origin.y === this.origin.y){
-          deposits.splice(i, 1);
-          break;
-        }
-      }
+    if(!paused){
+      this.frameCount -= 1;
     }
   }
-  deposits.push(this);
+  faders.push(this);
 }
