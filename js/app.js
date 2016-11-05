@@ -7,13 +7,15 @@ var canvas,
   start,
   launched,
   burning,
-  dampenControls,
+  dampenRot,
+  dampenBurn,
   rot,
   loaded,
   asteroids,
   shots,
   faders,
-  shotRemoveArr,
+  rShots,
+  rAsteroids,
   exploded,
   lives,
   invincible,
@@ -43,13 +45,15 @@ function init(){
   start = false;
   launched = false;
   burning = false;
-  dampenControls = false;
+  dampenRot = false;
+  dampenBurn = false;
   rot = 0;
   loaded = false;
   asteroids = [];
   shots = [];
   faders = [];
-  shotRemoveArr = [];
+  rShots = [];
+  rAsteroids = [];
   exploded = false;
   lives = 3;
   gameEnd = false;
@@ -64,7 +68,7 @@ function init(){
   scoreNumber = 10;
   newScore = true;
   nameInput = document.getElementById('nameInput');
-  sunAngle = Math.PI / 2;
+  sunAngle = Math.PI;
   setCanvas();
   setTextarea();
   setPlanet();
@@ -190,7 +194,7 @@ function renderShip(){
     ship.applyGravity(planet);
     if(burning){
       ship.flame = true;
-      if(dampenControls){
+      if(dampenBurn){
         ship.burn(.02 * u);
       }
       else{
@@ -200,12 +204,18 @@ function renderShip(){
     else{
       ship.flame = false;
     }
-    if(dampenControls){
-      ship.rotate(rot / 5);
+    if(dampenRot){
+      if(ship.deltaRot < -.003){
+        ship.deltaRot += .001;
+      }
+      else if(ship.deltaRot > .003){
+        ship.deltaRot -= .001;
+      }
+      else{
+        ship.deltaRot = 0;
+      }
     }
-    else{
-      ship.rotate(rot);
-    }
+    ship.rotate(rot);
     if(!exploded){
       ship.applyMotion();
     }
@@ -367,10 +377,7 @@ function renderFrame(){
     if(!paused){
       checkCollisions();
     }
-    if(gameEnd){
-      renderEndScreen();
-    }
-    else{
+    if(!gameEnd){
       renderShip();
       if(checkcomplete() && !paused){
         addWave();
@@ -381,7 +388,12 @@ function renderFrame(){
     renderShots();
     renderBonus();
     renderText();
+    if(gameEnd){
+      renderEndScreen();
+    }
 
+    removeShots();
+    removeAsteroids();
     reduceShots(maxShots);
     reduceAsteroids(maxAsteroids);
     expireFaders();
@@ -409,7 +421,7 @@ function handleKeydown(event){
   case 16: // shift
     if(!gameEnd){
       event.preventDefault();
-      dampenControls = true;
+      dampenRot = true;
     }
     break;
   case 38: // up
@@ -420,6 +432,14 @@ function handleKeydown(event){
       burning = true;
     }
     break;
+    case 40: // up
+    case 83: // w
+      if(!startScreen && !gameEnd && !paused){
+        event.preventDefault();
+        burning = true;
+        dampenBurn = true;
+      }
+      break;
   case 37: // left
   case 65: // a
     if(!startScreen && !gameEnd && !paused){
@@ -461,7 +481,7 @@ function handleKeyup(event){
   event.preventDefault();
   switch(event.keyCode){
   case 16: // shift
-    dampenControls = false;
+    dampenRot = false;
     break;
   case 38: // up
   case 87: // w
@@ -474,6 +494,14 @@ function handleKeyup(event){
   case 39: // right
   case 68: // d
     rot = 0;
+    break;
+  case 40: // up
+  case 83: // w
+    if(!startScreen && !gameEnd && !paused){
+      event.preventDefault();
+      burning = false;
+      dampenBurn = false;
+    }
     break;
   default:
     break;

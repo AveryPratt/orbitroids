@@ -15,15 +15,15 @@ function Planet(mass, radius, vel, deltaRot, col){
   this.draw = function(){
     ctx.beginPath();
     var planetSunVec = vecCirc(sunAngle, this.radius * .8, this.vel.origin);
-    var planetGrd = ctx.createRadialGradient(planetSunVec.head.x, planetSunVec.head.y, 0, planetSunVec.head.x, planetSunVec.head.y, this.radius * 1.2);
+    var planetGrd = ctx.createLinearGradient(planetSunVec.head.x, planetSunVec.head.y, this.vel.origin.x, this.vel.origin.y);
     planetGrd.addColorStop(0, 'rgba(255, 127, 0, 1)');
-    planetGrd.addColorStop(1, 'rgba(12, 0, 12, 1)');
+    planetGrd.addColorStop(1, 'rgba(63, 31, 31, 1)');
     ctx.arc(this.vel.origin.x, this.vel.origin.y, radius, 0, 2 * Math.PI, false);
     ctx.fillStyle = planetGrd;
     ctx.fill();
     var atmoSunVec = vecCirc(sunAngle, this.radius, this.vel.origin);
     var atmoGrd = ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, this.vel.origin.x, this.vel.origin.y, this.radius * 1.2);
-    atmoGrd.addColorStop(0, 'rgba(127, 127, 255, .7)');
+    atmoGrd.addColorStop(0, 'rgba(255, 255, 255, .5)');
     atmoGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.arc(this.vel.origin.x, this.vel.origin.y, radius * 1.2, 0, 2 * Math.PI, false);
     ctx.fillStyle = atmoGrd;
@@ -104,7 +104,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
       ctx.strokeStyle = col;
       ctx.stroke();
       if(this.flame){
-        if(dampenControls){
+        if(dampenBurn){
           var mult = .25;
         }
         else mult = .5;
@@ -186,7 +186,7 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
   else{this.vel = vecCirc();}
 
   if(maxRadius){this.maxRadius = maxRadius;}
-  else{this.maxRadius = (Math.random() * 20 + 20) * u;}
+  else{this.maxRadius = (Math.random() * 10 + 30) * u;}
 
   if(roughness){this.roughness = roughness;}
   else{this.roughness = .5;}
@@ -216,8 +216,14 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
       ctx.lineTo(this.arms[i].head.x, this.arms[i].head.y);
     }
     ctx.closePath();
-    ctx.strokeStyle = '#ffffff';
-    ctx.stroke();
+    // ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
+    // ctx.stroke();
+    var sunVec = vecCirc(sunAngle + Math.PI, this.maxRadius, this.vel.origin);
+    var grd = ctx.createRadialGradient(sunVec.head.x, sunVec.head.y, this.maxRadius, this.vel.origin.x, this.vel.origin.y, this.maxRadius * 2);
+    grd.addColorStop(0, 'rgba(63, 63, 63, 1)');
+    grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
+    ctx.fillStyle = grd;
+    ctx.fill();
   };
   this.rotate = function(accelRot){
     if(accelRot){this.deltaRot += accelRot;}
@@ -247,6 +253,7 @@ function Bonus(vel){
   };
   this.draw = function(){
     this.alignPoints();
+    ctx.beginPath();
     if(lives === 3){
       ctx.beginPath();
       ctx.moveTo(this.points[0].head.x, this.points[0].head.y);
@@ -254,7 +261,7 @@ function Bonus(vel){
         ctx.lineTo(this.points[i * 3 % 5].head.x, this.points[i * 3 % 5].head.y);
       }
       ctx.closePath();
-      ctx.fillStyle = '#ffff00';
+      ctx.fillStyle = 'rgba(255, 255, 0, 1)';
       ctx.fill();
     }
     else{
@@ -263,11 +270,20 @@ function Bonus(vel){
       ctx.lineTo(this.points[2].head.x, this.points[2].head.y);
       ctx.moveTo(this.points[1].head.x, this.points[1].head.y);
       ctx.lineTo(this.points[3].head.x, this.points[3].head.y);
-      ctx.strokeStyle = '#00ffff';
+      ctx.strokeStyle = 'rgba(0, 255, 255, 1)';
       ctx.lineWidth = 3 * u;
       ctx.stroke();
       ctx.lineWidth = 1 * u;
     }
+    var sunVec = vecCirc(sunAngle, 5 * u, this.vel.origin);
+    var grd = ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, this.vel.origin.x, this.vel.origin.y);
+    grd.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    grd.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grd;
+    ctx.arc(this.vel.origin.x, this.vel.origin.y, 5 * u, 0, 2 * Math.PI, false);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, .5)';
+    ctx.stroke();
   };
 }
 Bonus.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
