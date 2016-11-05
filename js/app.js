@@ -1,31 +1,82 @@
 'use strict';
 
-function checkcomplete(){
-  for (var i = 0; i < asteroids.length; i++) {
-    if(asteroids[i].vel.origin.x < 600 * u && asteroids[i].vel.origin.y < 600 * u && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
-      return false;
-    }
+var canvas,
+  u,
+  ctx,
+  name,
+  start,
+  launched,
+  burning,
+  dampenControls,
+  rot,
+  loaded,
+  asteroids,
+  shots,
+  faders,
+  shotRemoveArr,
+  exploded,
+  lives,
+  invincible,
+  planet,
+  ship,
+  gameEnd,
+  startScreen,
+  score,
+  bonus,
+  paused,
+  maxShots,
+  maxAsteroids,
+  scores,
+  scoreNumber,
+  newScore,
+  nameInput,
+  sunAngle;
+
+function initializeNameInput(previousName){
+  if(previousName){
+    nameInput.value = previousName;
   }
-  return true;
 }
-function launchBonus(placement, direction, diversion){
-  if(placement){
-    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
-  }
-  else {
-    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
-  }
-  if(direction){
-    var prograde = startingPointVec.forwardAngle + Math.PI / 2;
-  }
-  else{
-    prograde = startingPointVec.forwardAngle - Math.PI / 2;
-  }
-  if(diversion){
-    prograde += diversion * Math.PI / 2;
-  }
-  var vel = vecCirc(prograde, (findOrbitalVelocity(planet, startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
-  bonus = new Bonus(vel);
+function init(){
+  canvas = document.getElementById('canvas');
+  ctx = canvas.getContext('2d');
+  start = false;
+  launched = false;
+  burning = false;
+  dampenControls = false;
+  rot = 0;
+  loaded = false;
+  asteroids = [];
+  shots = [];
+  faders = [];
+  shotRemoveArr = [];
+  exploded = false;
+  lives = 3;
+  gameEnd = false;
+  startScreen = true;
+  score = 0;
+  bonus = 'start';
+  paused = false;
+  maxShots = 30;
+  maxAsteroids = 20;
+
+  scores = [];
+  scoreNumber = 10;
+  newScore = true;
+  nameInput = document.getElementById('nameInput');
+  sunAngle = Math.PI / 2;
+  setCanvas();
+  setTextarea();
+  setPlanet();
+  setShipTop();
+}
+function setPlanet(){
+  planet = new Planet((Math.pow(75 * u, 2) / 15) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
+}
+function setShipTop(){
+  start = false;
+  var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10 * u)));
+  ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 }
 function launchAsteroid(placement, direction, maxRadius){
   if(!start){
@@ -48,10 +99,24 @@ function launchAsteroid(placement, direction, maxRadius){
   var vel = vecCirc(prograde, findOrbitalVelocity(planet, startingPointVec.len), startingPointVec.head);
   new Asteroid(vel, maxRadius);
 };
-function setShipTop(){
-  start = false;
-  var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10 * u)));
-  ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
+function launchBonus(placement, direction, diversion){
+  if(placement){
+    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+  }
+  else {
+    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+  }
+  if(direction){
+    var prograde = startingPointVec.forwardAngle + Math.PI / 2;
+  }
+  else{
+    prograde = startingPointVec.forwardAngle - Math.PI / 2;
+  }
+  if(diversion){
+    prograde += diversion * Math.PI / 2;
+  }
+  var vel = vecCirc(prograde, (findOrbitalVelocity(planet, startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
+  bonus = new Bonus(vel);
 }
 function reduceShots(num){
   if(shots.length > num){
@@ -64,7 +129,6 @@ function reduceShots(num){
         indexToRemove = i;
       }
     }
-    console.log(Math.abs(shots[indexToRemove].vel.origin.x) + Math.abs(shots[indexToRemove].vel.origin.y));
     shots.splice(indexToRemove, 1);
   }
 }
@@ -82,13 +146,24 @@ function reduceAsteroids(num){
     asteroids.splice(indexToRemove, 1);
   }
 }
-function initializeNameInput(previousName){
-  if(previousName){
-    nameInput.value = previousName;
+function expireFaders(){
+  var removeFaders = [];
+  for (var i = 0; i < faders.length; i++) {
+    if(faders[i].frameCount <= 0){
+      removeFaders.push(i);
+    }
+  }
+  for (var i = removeFaders.length - 1; i >= 0; i--) {
+    faders.splice(removeFaders[i], 1);
   }
 }
-function setPlanet(){
-  planet = new Planet((Math.pow(75 * u, 2) / 14) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
+function checkcomplete(){
+  for (var i = 0; i < asteroids.length; i++) {
+    if(asteroids[i].vel.origin.x < 600 * u && asteroids[i].vel.origin.y < 600 * u && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
+      return false;
+    }
+  }
+  return true;
 }
 
 function checkCollisions(){
@@ -162,6 +237,11 @@ function renderAsteroids(){
     asteroids[i].draw();
   }
 }
+function renderFaders(){
+  for (var i = 0; i < faders.length; i++) {
+    faders[i].draw();
+  }
+}
 function renderShots(){
   for (var i = 0; i < shots.length; i++) {
     if(!paused){
@@ -209,14 +289,14 @@ function renderEndScreen(){
     storeScores();
     newScore = false;
   }
-  ctx.fillStyle = 'rgba(255, 255, 255, .6)';
-  ctx.fillRect(0, 0, 600 * u, 600 * u);
+  ctx.fillStyle = 'rgba(255, 255, 255, .2)';
+  ctx.fillRect(150 * u, 100 * u, 300 * u, 400 * u);
   ctx.fillStyle = '#000000';
   ctx.font = 24 * u + 'px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('Game Over', 300 * u, 60 * u);
+  ctx.fillText('Game Over', 300 * u, 140 * u);
   ctx.font = 12 * u + 'px Arial';
-  ctx.fillText('Press enter to play again', 300 * u, 290 * u);
+  ctx.fillText('Press enter to play again', 300 * u, 370 * u);
   ctx.font = 18 * u + 'px Arial';
   ctx.textAlign = 'center';
   var scoreSelected = false;
@@ -228,10 +308,10 @@ function renderEndScreen(){
     else{
       ctx.fillStyle = '#000000';
     }
-    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300 * u, (85 + 20 * i) * u);
+    ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300 * u, (165 + 20 * i) * u);
   }
   ctx.strokeStyle = '#ffffff';
-  ctx.strokeRect(200 * u, 65 * u, 200 * u, 210 * u);
+  ctx.strokeRect(200 * u, 145 * u, 200 * u, 210 * u);
 }
 function addWave(){
   var placement;
@@ -266,7 +346,7 @@ function setCanvas(){
   }
 }
 function setTextarea(){
-  nameInput.style.margin = 300 * u + 'px 50%';
+  nameInput.style.margin = 400 * u + 'px 50%';
 }
 
 function renderFrame(){
@@ -282,6 +362,7 @@ function renderFrame(){
   else{
     requestAnimationFrame(renderFrame);
     ctx.clearRect(0, 0, 600 * u, 600 * u);
+    sunAngle += .0005;
     planet.draw();
     if(!paused){
       checkCollisions();
@@ -296,46 +377,17 @@ function renderFrame(){
       }
     }
     renderAsteroids();
+    renderFaders();
     renderShots();
     renderBonus();
     renderText();
 
     reduceShots(maxShots);
     reduceAsteroids(maxAsteroids);
+    expireFaders();
   }
 }
 
-function init(){
-  canvas = document.getElementById('canvas');
-  ctx = canvas.getContext('2d');
-  start = false;
-  launched = false;
-  burning = false;
-  dampenControls = false;
-  rot = 0;
-  loaded = false;
-  asteroids = [];
-  shots = [];
-  shotRemoveArr = [];
-  exploded = false;
-  lives = 3;
-  gameEnd = false;
-  startScreen = true;
-  score = 0;
-  bonus = 'start';
-  paused = false;
-  maxShots = 30;
-  maxAsteroids = 20;
-
-  scores = [];
-  scoreNumber = 10;
-  newScore = true;
-  nameInput = document.getElementById('nameInput');
-  setCanvas();
-  setTextarea();
-  setPlanet();
-  setShipTop();
-}
 function handleKeydown(event){
   switch(event.keyCode){
   case 13: // enter
@@ -347,6 +399,7 @@ function handleKeydown(event){
       renderFrame();
     }
     else if(gameEnd){
+      nameInput.focus = true;
       event.preventDefault();
       name = nameInput.value;
       sessionStorage.setItem('previousName', name);
@@ -360,6 +413,7 @@ function handleKeydown(event){
     }
     break;
   case 38: // up
+  case 87: // w
     if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       start = true;
@@ -367,13 +421,15 @@ function handleKeydown(event){
     }
     break;
   case 37: // left
-    if(!gameEnd){
+  case 65: // a
+    if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       rot = .003;
     }
     break;
   case 39: // right
-    if(!gameEnd){
+  case 68: // d
+    if(!startScreen && !gameEnd && !paused){
       event.preventDefault();
       rot = -.003;
     }
@@ -408,12 +464,15 @@ function handleKeyup(event){
     dampenControls = false;
     break;
   case 38: // up
+  case 87: // w
     burning = false;
     break;
   case 37: // left
+  case 65: // a
     rot = 0;
     break;
   case 39: // right
+  case 68: // d
     rot = 0;
     break;
   default:
