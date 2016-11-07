@@ -56,77 +56,80 @@ function Ship(forwardAngle, deltaRot, vel, col){
   this.rear;
 
   this.draw = function(){
-    if(exploded){
-      if(typeof this.explosionCount !== 'number'){
-        this.explosionCount = 50;
-      }
-      else if(this.explosionCount > 0){
-        if(!paused){
-          this.explosionCount -= 1;
+    if(!destroyed){
+      if(exploded){
+        if(typeof this.explosionCount !== 'number'){
+          this.explosionCount = 50;
         }
-        ctx.beginPath();
-        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 3.3, 0, 2 * Math.PI, false);
-        ctx.fillStyle = '#ff0000';
-        ctx.fill();
+        else if(this.explosionCount > 0){
+          if(!paused){
+            this.explosionCount -= 1;
+          }
+          ctx.beginPath();
+          ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 3.3, 0, 2 * Math.PI, false);
+          ctx.fillStyle = '#ff0000';
+          ctx.fill();
 
-        ctx.beginPath();
-        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 5, 0, 2 * Math.PI, false);
-        ctx.fillStyle = '#ff8000';
-        ctx.fill();
+          ctx.beginPath();
+          ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 5, 0, 2 * Math.PI, false);
+          ctx.fillStyle = '#ff8000';
+          ctx.fill();
 
-        ctx.beginPath();
-        ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 10, 0, 2 * Math.PI, false);
-        ctx.fillStyle = '#ffff00';
-        ctx.fill();
-      }
-      else{
-        if(!gameEnd){
-          lives -= 1;
-        }
-        exploded = false;
-        loaded = false;
-        if(lives > 0){
-          setShipTop();
+          ctx.beginPath();
+          ctx.arc(this.vel.origin.x, this.vel.origin.y, this.explosionCount * u / 10, 0, 2 * Math.PI, false);
+          ctx.fillStyle = '#ffff00';
+          ctx.fill();
         }
         else{
-          gameEnd = true;
+          if(!gameEnd){
+            lives -= 1;
+          }
+          exploded = false;
+          loaded = false;
+          if(lives > 0){
+            setShipTop();
+            destroyed = true;
+          }
+          else{
+            gameEnd = true;
+          }
         }
       }
-    }
-    else{
-      ctx.beginPath();
-      ctx.moveTo(this.nose.head.x, this.nose.head.y);
-      ctx.lineTo(this.leftSide.head.x, this.leftSide.head.y);
-      ctx.lineTo(this.vel.origin.x, this.vel.origin.y);
-      ctx.lineTo(this.rightSide.head.x, this.rightSide.head.y);
-      ctx.closePath();
-      ctx.lineWidth = 1 * u;
-      ctx.strokeStyle = col;
-      ctx.stroke();
-      if(this.flame){
-        if(dampenBurn){
-          var mult = .25;
-        }
-        else mult = .5;
+      else{
         ctx.beginPath();
-        ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
-        ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult));
-        ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult));
-        ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult));
+        ctx.moveTo(this.nose.head.x, this.nose.head.y);
+        ctx.lineTo(this.leftSide.head.x, this.leftSide.head.y);
+        ctx.lineTo(this.vel.origin.x, this.vel.origin.y);
+        ctx.lineTo(this.rightSide.head.x, this.rightSide.head.y);
         ctx.closePath();
         ctx.lineWidth = 1 * u;
-        ctx.fillStyle = '#ff0000';
-        ctx.fill();
+        ctx.strokeStyle = col;
+        ctx.stroke();
+        if(this.flame){
+          if(dampenBurn){
+            var mult = .25;
+          }
+          else mult = .5;
+          ctx.beginPath();
+          ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
+          ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult));
+          ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult));
+          ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult));
+          ctx.closePath();
+          ctx.lineWidth = 1 * u;
+          ctx.fillStyle = '#ff0000';
+          ctx.fill();
 
-        ctx.beginPath();
-        ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
-        ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult));
-        ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * mult));
-        ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult));
-        ctx.closePath();
-        ctx.lineWidth = 1 * u;
-        ctx.fillStyle = '#ffff00';
-        ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(this.vel.origin.x, this.vel.origin.y);
+          ctx.lineTo(this.leftSide.head.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult), this.leftSide.head.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult));
+          ctx.lineTo(this.rear.head.x - (this.rear.delta.x - this.rear.delta.x * mult), this.rear.head.y - (this.rear.delta.y - this.rear.delta.y * mult));
+          ctx.lineTo(this.rightSide.head.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult), this.rightSide.head.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult));
+          ctx.closePath();
+          ctx.lineWidth = 1 * u;
+          ctx.fillStyle = '#ffff00';
+          ctx.fill();
+        }
       }
     }
   };
@@ -149,7 +152,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
   this.applyMotion = function(){
     this.vel = addVectors(this.vel, this.accel);
     this.vel = vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
-    this.trueAnom = vecCart(new Point(planet.vel.origin.x - this.vel.origin.x, planet.vel.origin.y - this.vel.origin.y), planet.origin);
+    this.trueAnom = vecCart(new Point(this.vel.origin.x - planet.vel.origin.x, this.vel.origin.y - planet.vel.origin.y), planet.origin);
     if(!this.trueAnom.forwardAngle){
       this.trueAnom.forwardAngle = 0;
     }
@@ -186,13 +189,13 @@ function Asteroid(vel, maxRadius, roughness, deltaRot, forwardAngle){
   else{this.vel = vecCirc();}
 
   if(maxRadius){this.maxRadius = maxRadius;}
-  else{this.maxRadius = (Math.random() * 10 + 30) * u;}
+  else{this.maxRadius = (Math.random() * 20 + 40) * u;}
 
   if(roughness){this.roughness = roughness;}
   else{this.roughness = .5;}
 
   if(deltaRot){this.deltaRot = deltaRot;}
-  else{this.deltaRot = Math.random() / 10 - .05;}
+  else{this.deltaRot = (Math.random() - .5) / (this.maxRadius / u);}
 
   if(forwardAngle){this.forwardAngle = forwardAngle;}
   else{this.forwardAngle = 0;}
