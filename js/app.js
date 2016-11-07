@@ -5,6 +5,7 @@ var canvas,
   ctx,
   name,
   start,
+  destroyed,
   launched,
   burning,
   dampenRot,
@@ -14,8 +15,6 @@ var canvas,
   asteroids,
   shots,
   faders,
-  rShots,
-  rAsteroids,
   exploded,
   lives,
   invincible,
@@ -43,6 +42,7 @@ function init(){
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
   start = false;
+  destroyed = false;
   launched = false;
   burning = false;
   dampenRot = false;
@@ -52,8 +52,6 @@ function init(){
   asteroids = [];
   shots = [];
   faders = [];
-  rShots = [];
-  rAsteroids = [];
   exploded = false;
   lives = 3;
   gameEnd = false;
@@ -62,7 +60,7 @@ function init(){
   bonus = 'start';
   paused = false;
   maxShots = 30;
-  maxAsteroids = 20;
+  maxAsteroids = 50;
 
   scores = [];
   scoreNumber = 10;
@@ -79,21 +77,23 @@ function setPlanet(){
 }
 function setShipTop(){
   start = false;
+  destroyed = false;
   var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10 * u)));
   ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 }
 function launchAsteroid(placement, direction, maxRadius){
   if(!start){
-    var startingPointVec = vecCirc(Math.random() * 2 * Math.PI, 150 * u, planet.vel.origin);
+    var startAngle = Math.random() * 2 * Math.PI;
   }
   else{
     if(placement){
-      startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+      startAngle = ship.trueAnom.forwardAngle + placement;
     }
     else {
-      startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+      startAngle = ship.trueAnom.forwardAngle + Math.PI;
     }
   }
+  var startingPointVec = vecCirc(startAngle, 175 * u, planet.vel.origin);
   if(direction){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
   }
@@ -105,10 +105,10 @@ function launchAsteroid(placement, direction, maxRadius){
 };
 function launchBonus(placement, direction, diversion){
   if(placement){
-    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle - 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle + placement, 150 * u, planet.vel.origin);
   }
   else {
-    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + 2 * Math.PI / 6, 150 * u, planet.vel.origin);
+    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + Math.PI, 150 * u, planet.vel.origin);
   }
   if(direction){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
@@ -324,19 +324,17 @@ function renderEndScreen(){
   ctx.strokeRect(200 * u, 145 * u, 200 * u, 210 * u);
 }
 function addWave(){
-  var placement;
-  var direction;
   if(Math.random() > .5){
-    placement = true;
-  }
-  else placement = false;
-  if(Math.random() > .5){
-    direction = true;
+    var direction = true;
   }
   else direction = false;
-  launchAsteroid(placement, direction);
+  for (var i = 0, inc = 0; i <= score; inc += 1000, i += inc) {
+    if(score >= i){
+      launchAsteroid(Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction);
+    }
+  }
   if(bonus === null){
-    launchBonus(placement, direction, Math.random() - .5);
+    launchBonus(Math.random * 2 * Math.PI, direction, Math.random() - .5);
   }
   else if(bonus === 'start'){
     bonus = null;
@@ -392,8 +390,6 @@ function renderFrame(){
       renderEndScreen();
     }
 
-    removeShots();
-    removeAsteroids();
     reduceShots(maxShots);
     reduceAsteroids(maxAsteroids);
     expireFaders();
@@ -426,30 +422,30 @@ function handleKeydown(event){
     break;
   case 38: // up
   case 87: // w
-    if(!startScreen && !gameEnd && !paused){
+    if(!startScreen && !gameEnd && !paused && !destroyed){
       event.preventDefault();
       start = true;
       burning = true;
     }
     break;
-    case 40: // up
-    case 83: // w
-      if(!startScreen && !gameEnd && !paused){
-        event.preventDefault();
-        burning = true;
-        dampenBurn = true;
-      }
-      break;
+  case 40: // up
+  case 83: // w
+    if(!startScreen && !gameEnd && !paused && !destroyed){
+      event.preventDefault();
+      burning = true;
+      dampenBurn = true;
+    }
+    break;
   case 37: // left
   case 65: // a
-    if(!startScreen && !gameEnd && !paused){
+    if(!startScreen && !gameEnd && !paused && !destroyed){
       event.preventDefault();
       rot = .003;
     }
     break;
   case 39: // right
   case 68: // d
-    if(!startScreen && !gameEnd && !paused){
+    if(!startScreen && !gameEnd && !paused && !destroyed){
       event.preventDefault();
       rot = -.003;
     }
@@ -457,7 +453,10 @@ function handleKeydown(event){
   case 32: // space
     if(!gameEnd){
       event.preventDefault();
-      if(start){
+      if(destroyed){
+        destroyed = false;
+      }
+      else if(start){
         loaded = true;
       }
     }
@@ -497,11 +496,9 @@ function handleKeyup(event){
     break;
   case 40: // up
   case 83: // w
-    if(!startScreen && !gameEnd && !paused){
-      event.preventDefault();
-      burning = false;
-      dampenBurn = false;
-    }
+    event.preventDefault();
+    burning = false;
+    dampenBurn = false;
     break;
   default:
     break;

@@ -18,7 +18,8 @@ var checkShotPlanetCollisions = function(){
   for (var i = 0; i < shots.length; i++) {
     var distVec = vecCart(new Point(planet.vel.origin.x - shots[i].vel.origin.x, planet.vel.origin.y - shots[i].vel.origin.y), planet.vel.origin);
     if(distVec.len <= planet.radius){
-      rShots.push(i);
+      shots.splice(i, 1);
+      i -= 1;
     }
   }
 };
@@ -32,11 +33,12 @@ var checkAsteroidPlanetCollisions = function(){
         new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
       }
       explodeAsteroid(i, distVec.forwardAngle);
+      i -= 1;
     }
   }
 };
 var checkAsteroidShipCollision = function(){
-  if(!exploded){
+  if(!exploded && !destroyed){
     for (var i = 0; i < asteroids.length; i++) {
       if(vecCart(new Point(ship.vel.origin.x - asteroids[i].vel.origin.x, ship.vel.origin.y - asteroids[i].vel.origin.y)).len < asteroids[i].maxRadius + 10 * u){
         var noseVec = vecCart(new Point(ship.nose.head.x - asteroids[i].vel.origin.x, ship.nose.head.y - asteroids[i].vel.origin.y), asteroids[i].vel.origin);
@@ -58,6 +60,8 @@ var checkAsteroidShipCollision = function(){
                 new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
               }
               explodeAsteroid(i);
+              i -= 1;
+              break;
             }
           }
         }
@@ -73,6 +77,8 @@ var checkAsteroidShipCollision = function(){
                   new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
                 }
                 explodeAsteroid(i);
+                i -= 1;
+                break;
               }
             }
           }
@@ -93,7 +99,10 @@ var checkShotAsteroidCollisions = function(){
             new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
           }
           explodeAsteroid(i);
-          rShots.push(j);
+          i -= 1;
+          shots.splice(j, 1);
+          // j -= 1;
+          break;
         }
       }
     }
@@ -109,7 +118,8 @@ var checkShotShipCollisions = function(){
       if(checkPointInsidePolygon(shots[i].vel.origin, shipVecs)){
         exploded = true;
         new Fader(ship.vel.origin, 12, '255, 0, 0', 100, '-1');
-        rShots.push(i);
+        shots.splice(i, 1);
+        i -= 1;
       }
     }
   }
@@ -143,45 +153,35 @@ var checkPointInsidePolygon = function(point, vecArr){
   }
 };
 var checkBonusShipCollision = function(){
-  var dist = vecCart(new Point(bonus.vel.origin.x - ship.vel.origin.x, bonus.vel.origin.y - ship.vel.origin.y), bonus.vel.origin).len;
-  if(dist < 10 * u){
-    if(lives === 3){
-      invincible = true;
-      if(!gameEnd){
-        score += 1000;
-        new Fader(bonus.vel.origin, 12, '255, 255, 0', 100, '1000');
+  if(!destroyed && !exploded){
+    var dist = vecCart(new Point(bonus.vel.origin.x - ship.vel.origin.x, bonus.vel.origin.y - ship.vel.origin.y), bonus.vel.origin).len;
+    if(dist < 10 * u){
+      if(lives === 3){
+        invincible = true;
+        if(!gameEnd){
+          score += 1000;
+          new Fader(bonus.vel.origin, 12, '255, 255, 0', 100, '1000');
+        }
       }
+      else{
+        lives += 1;
+        new Fader(bonus.vel.origin, 12, '0, 255, 255', 100, '+1');
+      }
+      bonus = null;
     }
-    else{
-      lives += 1;
-      new Fader(bonus.vel.origin, 12, '0, 255, 255', 100, '+1');
-    }
-    bonus = null;
   }
 };
 
-var removeShots = function(){
-  for (var i = 0; i < rShots.length; i++) {
-    shots.splice(rShots[i], 1);
-  }
-  rShots = [];
-};
-var removeAsteroids = function(){
-  for (var i = 0; i < rAsteroids.length; i++) {
-    asteroids.splice(rAsteroids[i], 1);
-  }
-  rAsteroids = [];
-};
 var explodeAsteroid = function(index, tangentAngle){
   if(asteroids[index].maxRadius >= 30 * u){
     var parentAsteroid = asteroids[index];
     var rad1 = newRad(parentAsteroid.maxRadius);
     var rad2 = newRad(parentAsteroid.maxRadius);
     var rad3 = newRad(parentAsteroid.maxRadius);
-    var totalRad = rad1 + rad2 + rad3;
-    var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, rad1 / (2 * totalRad)));
-    var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 2 * Math.PI / 3, rad2 / (2 * totalRad)));
-    var newVec3 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 4 * Math.PI / 3, rad3 / (2 * totalRad)));
+    // var totalRad = rad1 + rad2 + rad3;
+    var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 / rad1));
+    var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 2 * Math.PI / 3, 6 / rad2));
+    var newVec3 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 4 * Math.PI / 3, 6 / rad3));
     if(tangentAngle){
       var bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
       newVec1 = addVectors(newVec1, bounce);
@@ -199,9 +199,9 @@ var explodeAsteroid = function(index, tangentAngle){
     parentAsteroid = asteroids[index];
     rad1 = newRad(parentAsteroid.maxRadius);
     rad2 = newRad(parentAsteroid.maxRadius);
-    totalRad = rad1 + rad2;
-    newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, rad1 / (2 * totalRad)));
-    newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, rad2 / (2 * totalRad)));
+    // totalRad = rad1 + rad2;
+    newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 / rad1));
+    newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, 6 / rad2));
     if(tangentAngle){
       bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
       newVec1 = addVectors(newVec1, bounce);
@@ -212,8 +212,8 @@ var explodeAsteroid = function(index, tangentAngle){
     new Asteroid(newVec1, rad1);
     new Asteroid(newVec2, rad2);
   }
-  rAsteroids.push(index);
+  asteroids.splice(index, 1);
 };
 var newRad = function(oldRad){
-  return (Math.random() / 4 + .5) * oldRad;
+  return (Math.random() / 3 + 1 / 3) * oldRad;
 };
