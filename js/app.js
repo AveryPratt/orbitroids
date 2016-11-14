@@ -74,14 +74,12 @@ function init(){
 }
 function setPlanets(){
   planets = [];
-  var mass1 = (Math.pow(60 * u, 3) / 1200) * u,
-    mass2 = (Math.pow(60 * u, 3) / 1200) * u,
+  var mass1 = (Math.pow(80 * u, 3) / 1200) * u,
+    mass2 = (Math.pow(40 * u, 3) / 1200) * u,
     totalMass = mass1 + mass2,
     dist = vecCart(new Point(200, 200), new Point(250, 250));
-  planets.push(new Planet(mass1, 50 * u, vecCart(new Point(0, 0), new Point(400 * u, 400 * u)), 0, [0, 80, 255], true));
-  planets.push(new Planet(mass2, 50 * u, vecCart(new Point(0, 0), new Point(200 * u, 200 * u)), 0, [80, 255, 80], true));
-  planets[0].vel = vecCirc(dist.forwardAngle + Math.PI / 2, findOrbitalVelocity(planets[1], dist.len) * 2 / 3, planets[0].vel.origin);
-  planets[1].vel = vecCirc(dist.forwardAngle - Math.PI / 2, findOrbitalVelocity(planets[0], dist.len) * 2 / 3, planets[1].vel.origin);
+  planets.push(new Planet(mass1, 60 * u, vecCirc(dist.forwardAngle + Math.PI / 2, findOrbitalVelocity(new Planet(totalMass), dist.len) * mass2 / totalMass, new Point(320 * u, 320 * u)), 0, [0, 80, 255], true));
+  planets.push(new Planet(mass2, 20 * u, vecCirc(dist.forwardAngle - Math.PI / 2, findOrbitalVelocity(new Planet(totalMass), dist.len) * mass1 / totalMass, new Point(150 * u, 150 * u)), 0, [80, 80, 80], false));
 }
 function setShipTop(){
   start = false;
@@ -363,9 +361,7 @@ function addWave(){
   else direction = false;
   for (var i = 0, inc = 0; i <= score; inc += 1000, i += inc) {
     if(score >= i){
-      for (var j = 0; j < planets.length; j++) {
-        launchAsteroid(j, 80 * u, Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction, 30);
-      }
+      launchAsteroid(0, 150 * u, Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction, 40 * u);
     }
   }
   if(bonus === null){

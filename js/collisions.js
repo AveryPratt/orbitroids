@@ -25,12 +25,14 @@ var checkShotPlanetCollisions = function(){
       if(distVec.len <= planets[j].radius){
         shots.splice(i, 1);
         i -= 1;
+        break;
       }
     }
   }
 };
 var checkAsteroidPlanetCollisions = function(){
   for (var i = 0; i < asteroids.length; i++) {
+    var asteroidExploded = false;
     for (var j = 0; j < planets.length; j++) {
       var distVec = vecCart(new Point(planets[j].vel.origin.x - asteroids[i].vel.origin.x, planets[j].vel.origin.y - asteroids[i].vel.origin.y), planets[j].vel.origin);
       if(distVec.len <= planets[j].radius + asteroids[i].maxRadius){
@@ -42,10 +44,14 @@ var checkAsteroidPlanetCollisions = function(){
               new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
             }
             explodeAsteroid(i, distVec.forwardAngle);
+            asteroidExploded = true;
             i -= 1;
             break;
           }
         }
+      }
+      if (asteroidExploded){
+        break;
       }
     }
   }
