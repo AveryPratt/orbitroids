@@ -74,17 +74,22 @@ function init(){
 }
 function setPlanets(){
   planets = [];
-  planets.push(new Planet((Math.pow(75 * u, 3) / 1200) * u, 75 * u, vecCart(new Point(0 * u, 0 * u), new Point(300 * u, 300 * u)), 0, [0, 80, 255], true));
-  planets.push(new Planet((Math.pow(50 * u, 3) / 1200) * u, 50 * u, vecCart(new Point(.8 * u, -.8 * u), new Point(100 * u, 100 * u)), 0, [255, 80, 0], true));
-  planets.push(new Planet((Math.pow(20 * u, 3) / 1200) * u, 20 * u, vecCart(new Point(-.6 * u, .6 * u), new Point(500 * u, 500 * u)), 0));
+  var mass1 = (Math.pow(60 * u, 3) / 1200) * u,
+    mass2 = (Math.pow(60 * u, 3) / 1200) * u,
+    totalMass = mass1 + mass2,
+    dist = vecCart(new Point(200, 200), new Point(250, 250));
+  planets.push(new Planet(mass1, 50 * u, vecCart(new Point(0, 0), new Point(400 * u, 400 * u)), 0, [0, 80, 255], true));
+  planets.push(new Planet(mass2, 50 * u, vecCart(new Point(0, 0), new Point(200 * u, 200 * u)), 0, [80, 255, 80], true));
+  planets[0].vel = vecCirc(dist.forwardAngle + Math.PI / 2, findOrbitalVelocity(planets[1], dist.len) * 2 / 3, planets[0].vel.origin);
+  planets[1].vel = vecCirc(dist.forwardAngle - Math.PI / 2, findOrbitalVelocity(planets[0], dist.len) * 2 / 3, planets[1].vel.origin);
 }
 function setShipTop(){
   start = false;
   destroyed = false;
-  var shipVel = vecCirc(0, 0, new Point(planets[0].vel.origin.x, planets[0].vel.origin.y - (planets[0].radius + 10 * u)));
+  var shipVel = vecCirc(Math.PI, 0, new Point(300 * u, 599 * u));
   ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 }
-function launchAsteroid(placement, direction, maxRadius){
+function launchAsteroid(planetIndex, alt, placement, direction, maxRadius){
   if(!start){
     var startAngle = Math.random() * 2 * Math.PI;
   }
@@ -96,14 +101,14 @@ function launchAsteroid(placement, direction, maxRadius){
       startAngle = ship.trueAnom.forwardAngle + Math.PI;
     }
   }
-  var startingPointVec = vecCirc(startAngle, 175 * u, planets[0].vel.origin);
+  var startingPointVec = vecCirc(startAngle, alt, planets[planetIndex].vel.origin);
   if(direction){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
   }
   else{
     prograde = startingPointVec.forwardAngle - Math.PI / 2;
   }
-  var vel = vecCirc(prograde, findOrbitalVelocity(planets[0], startingPointVec.len), startingPointVec.head);
+  var vel = vecCirc(prograde, findOrbitalVelocity(planets[planetIndex], startingPointVec.len), startingPointVec.head);
   new Asteroid(vel, maxRadius);
 };
 function launchBonus(placement, direction, diversion){
@@ -122,7 +127,8 @@ function launchBonus(placement, direction, diversion){
   if(diversion){
     prograde += diversion * Math.PI / 2;
   }
-  var vel = vecCirc(prograde, (findOrbitalVelocity(planets[0], startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
+  var vel = vecCart(new Point(0, 0), new Point(300 * u, 300 * u));
+  // var vel = vecCirc(prograde, (findOrbitalVelocity(planets[0], startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
   bonus = new Bonus(vel);
 }
 function reduceShots(num){
@@ -357,7 +363,9 @@ function addWave(){
   else direction = false;
   for (var i = 0, inc = 0; i <= score; inc += 1000, i += inc) {
     if(score >= i){
-      launchAsteroid(Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction);
+      for (var j = 0; j < planets.length; j++) {
+        launchAsteroid(j, 80 * u, Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction, 30);
+      }
     }
   }
   if(bonus === null){
