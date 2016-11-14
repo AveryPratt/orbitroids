@@ -6,37 +6,45 @@ var checkShipEscaped = function(){
   }
 }
 var checkShipPlanetCollision = function(){
-  var noseVec = vecCart(new Point(planet.vel.origin.x - ship.nose.head.x, planet.vel.origin.y - ship.nose.head.y), planet.vel.origin);
-  var leftSideVec = vecCart(new Point(planet.vel.origin.x - ship.leftSide.head.x, planet.vel.origin.y - ship.leftSide.head.y), planet.vel.origin);
-  var rightSideVec = vecCart(new Point(planet.vel.origin.x - ship.rightSide.head.x, planet.vel.origin.y - ship.rightSide.head.y), planet.vel.origin);
-  if(noseVec.len <= planet.radius || leftSideVec.len <= planet.radius || rightSideVec.len <= planet.radius){
-    exploded = true;
-    new Fader(ship.vel.origin, 12, '255, 0, 0', 100, '-1');
+  for (var i = 0; i < planets.length; i++) {
+    if(vecCart(new Point(planets[i].vel.origin.x - ship.vel.origin.x, planets[i].vel.origin.y - ship.vel.origin.y), planets[i].vel.origin).len < planets[i].radius + 10 * u){
+      var noseVec = vecCart(new Point(planets[i].vel.origin.x - ship.nose.head.x, planets[i].vel.origin.y - ship.nose.head.y), planets[i].vel.origin);
+      var leftSideVec = vecCart(new Point(planets[i].vel.origin.x - ship.leftSide.head.x, planets[i].vel.origin.y - ship.leftSide.head.y), planets[i].vel.origin);
+      var rightSideVec = vecCart(new Point(planets[i].vel.origin.x - ship.rightSide.head.x, planets[i].vel.origin.y - ship.rightSide.head.y), planets[i].vel.origin);
+      if(noseVec.len <= planets[i].radius || leftSideVec.len <= planets[i].radius || rightSideVec.len <= planets[i].radius){
+        exploded = true;
+        new Fader(ship.vel.origin, 12, '255, 0, 0', 100, '-1');
+      }
+    }
   }
 };
 var checkShotPlanetCollisions = function(){
   for (var i = 0; i < shots.length; i++) {
-    var distVec = vecCart(new Point(planet.vel.origin.x - shots[i].vel.origin.x, planet.vel.origin.y - shots[i].vel.origin.y), planet.vel.origin);
-    if(distVec.len <= planet.radius){
-      shots.splice(i, 1);
-      i -= 1;
+    for (var j = 0; j < planets.length; j++) {
+      var distVec = vecCart(new Point(planets[j].vel.origin.x - shots[i].vel.origin.x, planets[j].vel.origin.y - shots[i].vel.origin.y), planets[j].vel.origin);
+      if(distVec.len <= planets[j].radius){
+        shots.splice(i, 1);
+        i -= 1;
+      }
     }
   }
 };
 var checkAsteroidPlanetCollisions = function(){
   for (var i = 0; i < asteroids.length; i++) {
-    var distVec = vecCart(new Point(planet.vel.origin.x - asteroids[i].vel.origin.x, planet.vel.origin.y - asteroids[i].vel.origin.y), planet.vel.origin);
-    if(distVec.len <= planet.radius + asteroids[i].maxRadius){
-      for (var j = 0; j < asteroids[i].arms.length; j++) {
-        if(vecCart(new Point(planet.vel.origin.x - asteroids[i].arms[j].head.x, planet.vel.origin.y - asteroids[i].arms[j].head.y), planet.vel.origin).len <= planet.radius){
-          if(!gameEnd){
-            var added = Math.round(100 * u / asteroids[i].maxRadius);
-            score += added;
-            new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+    for (var j = 0; j < planets.length; j++) {
+      var distVec = vecCart(new Point(planets[j].vel.origin.x - asteroids[i].vel.origin.x, planets[j].vel.origin.y - asteroids[i].vel.origin.y), planets[j].vel.origin);
+      if(distVec.len <= planets[j].radius + asteroids[i].maxRadius){
+        for (var k = 0; k < asteroids[i].arms.length; k++) {
+          if(vecCart(new Point(planets[j].vel.origin.x - asteroids[i].arms[k].head.x, planets[j].vel.origin.y - asteroids[i].arms[k].head.y), planets[j].vel.origin).len <= planets[j].radius){
+            if(!gameEnd){
+              var added = Math.round(100 * u / asteroids[i].maxRadius);
+              score += added;
+              new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+            }
+            explodeAsteroid(i, distVec.forwardAngle);
+            i -= 1;
+            break;
           }
-          explodeAsteroid(i, distVec.forwardAngle);
-          i -= 1;
-          break;
         }
       }
     }

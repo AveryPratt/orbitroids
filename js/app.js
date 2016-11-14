@@ -18,7 +18,7 @@ var canvas,
   exploded,
   lives,
   invincible,
-  planet,
+  planets,
   ship,
   gameEnd,
   startScreen,
@@ -69,16 +69,19 @@ function init(){
   sunAngle = Math.PI;
   setCanvas();
   setTextarea();
-  setPlanet();
+  setPlanets();
   setShipTop();
 }
-function setPlanet(){
-  planet = new Planet((Math.pow(75 * u, 2) / 15) * u, 75 * u, vecCart(new Point(0, 0), new Point(300 * u, 300 * u)), 0, '#008000');
+function setPlanets(){
+  planets = [];
+  planets.push(new Planet((Math.pow(75 * u, 3) / 1200) * u, 75 * u, vecCart(new Point(0 * u, 0 * u), new Point(300 * u, 300 * u)), 0, [0, 80, 255], true));
+  planets.push(new Planet((Math.pow(50 * u, 3) / 1200) * u, 50 * u, vecCart(new Point(.8 * u, -.8 * u), new Point(100 * u, 100 * u)), 0, [255, 80, 0], true));
+  planets.push(new Planet((Math.pow(20 * u, 3) / 1200) * u, 20 * u, vecCart(new Point(-.6 * u, .6 * u), new Point(500 * u, 500 * u)), 0));
 }
 function setShipTop(){
   start = false;
   destroyed = false;
-  var shipVel = vecCirc(0, 0, new Point(planet.vel.origin.x, planet.vel.origin.y - (planet.radius + 10 * u)));
+  var shipVel = vecCirc(0, 0, new Point(planets[0].vel.origin.x, planets[0].vel.origin.y - (planets[0].radius + 10 * u)));
   ship = new Ship(Math.PI, 0, shipVel, '#ffffff');
 }
 function launchAsteroid(placement, direction, maxRadius){
@@ -93,22 +96,22 @@ function launchAsteroid(placement, direction, maxRadius){
       startAngle = ship.trueAnom.forwardAngle + Math.PI;
     }
   }
-  var startingPointVec = vecCirc(startAngle, 175 * u, planet.vel.origin);
+  var startingPointVec = vecCirc(startAngle, 175 * u, planets[0].vel.origin);
   if(direction){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
   }
   else{
     prograde = startingPointVec.forwardAngle - Math.PI / 2;
   }
-  var vel = vecCirc(prograde, findOrbitalVelocity(planet, startingPointVec.len), startingPointVec.head);
+  var vel = vecCirc(prograde, findOrbitalVelocity(planets[0], startingPointVec.len), startingPointVec.head);
   new Asteroid(vel, maxRadius);
 };
 function launchBonus(placement, direction, diversion){
   if(placement){
-    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle + placement, 150 * u, planet.vel.origin);
+    var startingPointVec = vecCirc(ship.trueAnom.forwardAngle + placement, 150 * u, planets[0].vel.origin);
   }
   else {
-    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + Math.PI, 150 * u, planet.vel.origin);
+    startingPointVec = vecCirc(ship.trueAnom.forwardAngle + Math.PI, 150 * u, planets[0].vel.origin);
   }
   if(direction){
     var prograde = startingPointVec.forwardAngle + Math.PI / 2;
@@ -119,7 +122,7 @@ function launchBonus(placement, direction, diversion){
   if(diversion){
     prograde += diversion * Math.PI / 2;
   }
-  var vel = vecCirc(prograde, (findOrbitalVelocity(planet, startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
+  var vel = vecCirc(prograde, (findOrbitalVelocity(planets[0], startingPointVec.len) / u + Math.random() * .2 - .1) * u, startingPointVec.head);
   bonus = new Bonus(vel);
 }
 function reduceShots(num){
@@ -127,7 +130,7 @@ function reduceShots(num){
     var largestDist = 0;
     var indexToRemove;
     for (var i = 0; i < shots.length; i++) {
-      var dist = Math.abs(shots[i].vel.origin.x - planet.vel.origin.x) + Math.abs(shots[i].vel.origin.y - planet.vel.origin.y);
+      var dist = Math.abs(shots[i].vel.origin.x - planets[0].vel.origin.x) + Math.abs(shots[i].vel.origin.y - planets[0].vel.origin.y);
       if(dist > largestDist){
         largestDist = dist;
         indexToRemove = i;
@@ -141,7 +144,7 @@ function reduceAsteroids(num){
     var largestDist = 0;
     var indexToRemove;
     for (var i = 0; i < asteroids.length; i++) {
-      var dist = Math.abs(asteroids[i].vel.origin.x - planet.vel.origin.x) + Math.abs(asteroids[i].vel.origin.y - planet.vel.origin.y);
+      var dist = Math.abs(asteroids[i].vel.origin.x - planets[0].vel.origin.x) + Math.abs(asteroids[i].vel.origin.y - planets[0].vel.origin.y);
       if(dist > largestDist){
         largestDist = dist;
         indexToRemove = i;
@@ -184,6 +187,22 @@ function checkCollisions(){
   checkAsteroidPlanetCollisions();
   checkShotShipCollisions();
 }
+function renderPlanets(){
+  for (var i = 0; i < planets.length; i++) {
+    planets[i].resetAccel();
+    for (var j = 0; j < planets.length; j++) {
+      if(i !== j){
+        planets[i].applyGravity(planets[j]);
+      }
+    }
+  }
+  for (var i = 0; i < planets.length; i++) {
+    if(!paused){
+      planets[i].applyMotion();
+    }
+    planets[i].draw();
+  }
+}
 function renderShip(){
   if(start && !paused){
     ship.resetAccel();
@@ -191,7 +210,9 @@ function renderShip(){
       ship.shoot();
       loaded = false;
     }
-    ship.applyGravity(planet);
+    for (var i = 0; i < planets.length; i++) {
+      ship.applyGravity(planets[i]);
+    }
     if(burning){
       ship.flame = true;
       if(dampenBurn){
@@ -241,7 +262,9 @@ function renderAsteroids(){
     if(!paused){
       asteroids[i].rotate();
       asteroids[i].resetAccel();
-      asteroids[i].applyGravity(planet);
+      for (var j = 0; j < planets.length; j++) {
+        asteroids[i].applyGravity(planets[j]);
+      }
       asteroids[i].applyMotion();
     }
     asteroids[i].draw();
@@ -256,7 +279,9 @@ function renderShots(){
   for (var i = 0; i < shots.length; i++) {
     if(!paused){
       shots[i].resetAccel();
-      shots[i].applyGravity(planet);
+      for (var j = 0; j < planets.length; j++) {
+        shots[i].applyGravity(planets[j]);
+      }
       shots[i].applyMotion();
     }
     shots[i].draw();
@@ -266,7 +291,9 @@ function renderBonus(){
   if(bonus && bonus !== 'start' && !gameEnd){
     if(!paused){
       bonus.resetAccel();
-      bonus.applyGravity(planet);
+      for (var i = 0; i < planets.length; i++) {
+        bonus.applyGravity(planets[i]);
+      }
       bonus.applyMotion();
     }
     bonus.draw();
@@ -371,7 +398,7 @@ function renderFrame(){
     requestAnimationFrame(renderFrame);
     ctx.clearRect(0, 0, 600 * u, 600 * u);
     sunAngle += .0005;
-    planet.draw();
+    renderPlanets();
     if(!paused){
       checkCollisions();
     }

@@ -1,6 +1,6 @@
 'use strict';
 
-function Planet(mass, radius, vel, deltaRot, col){
+function Planet(mass, radius, vel, deltaRot, col, atm){
   if(vel){this.vel = vel;}
   else{this.vel = vecCirc();}
 
@@ -8,7 +8,10 @@ function Planet(mass, radius, vel, deltaRot, col){
   else{this.deltaRot = 0;}
 
   if(col){this.col = col;}
-  else{this.col = '#ffffff';}
+  else{this.col = [255, 255, 255];}
+
+  if(atm){this.atm = atm;}
+  else{this.atm = false;}
 
   this.radius = radius;
   this.mass = mass;
@@ -16,18 +19,20 @@ function Planet(mass, radius, vel, deltaRot, col){
     ctx.beginPath();
     var planetSunVec = vecCirc(sunAngle, this.radius * .8, this.vel.origin);
     var planetGrd = ctx.createLinearGradient(planetSunVec.head.x, planetSunVec.head.y, this.vel.origin.x, this.vel.origin.y);
-    planetGrd.addColorStop(0, 'rgba(255, 127, 0, 1)');
-    planetGrd.addColorStop(1, 'rgba(63, 31, 31, 1)');
+    planetGrd.addColorStop(0, 'rgba(' + this.col[0] + ', ' + this.col[1] + ', ' + this.col[2] + ', 1)');
+    planetGrd.addColorStop(1, 'rgba(' + Math.round(this.col[0] / 4) + ', ' + Math.round(this.col[1] / 4) + ', ' + Math.round(this.col[2] / 4) + ', 1)');
     ctx.arc(this.vel.origin.x, this.vel.origin.y, radius, 0, 2 * Math.PI, false);
     ctx.fillStyle = planetGrd;
     ctx.fill();
-    var atmoSunVec = vecCirc(sunAngle, this.radius, this.vel.origin);
-    var atmoGrd = ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, this.vel.origin.x, this.vel.origin.y, this.radius * 1.2);
-    atmoGrd.addColorStop(0, 'rgba(255, 255, 255, .5)');
-    atmoGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.arc(this.vel.origin.x, this.vel.origin.y, radius * 1.2, 0, 2 * Math.PI, false);
-    ctx.fillStyle = atmoGrd;
-    ctx.fill();
+    if(this.atm){
+      var atmoSunVec = vecCirc(sunAngle, this.radius, this.vel.origin);
+      var atmoGrd = ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, this.vel.origin.x, this.vel.origin.y, this.radius * 1.2);
+      atmoGrd.addColorStop(0, 'rgba(255, 255, 255, .5)');
+      atmoGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.arc(this.vel.origin.x, this.vel.origin.y, radius * 1.2, 0, 2 * Math.PI, false);
+      ctx.fillStyle = atmoGrd;
+      ctx.fill();
+    }
   };
 }
 Planet.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
@@ -152,7 +157,7 @@ function Ship(forwardAngle, deltaRot, vel, col){
   this.applyMotion = function(){
     this.vel = addVectors(this.vel, this.accel);
     this.vel = vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
-    this.trueAnom = vecCart(new Point(this.vel.origin.x - planet.vel.origin.x, this.vel.origin.y - planet.vel.origin.y), planet.origin);
+    this.trueAnom = vecCart(new Point(this.vel.origin.x - planets[0].vel.origin.x, this.vel.origin.y - planets[0].vel.origin.y), planets[0].origin);
     if(!this.trueAnom.forwardAngle){
       this.trueAnom.forwardAngle = 0;
     }
