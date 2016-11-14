@@ -198,7 +198,7 @@ function renderShip(){
         ship.burn(.02 * u);
       }
       else{
-        ship.burn(.1 * u);
+        ship.burn(.06 * u);
       }
     }
     else{
@@ -424,12 +424,15 @@ function handleKeydown(event){
   case 87: // w
     if(!startScreen && !gameEnd && !paused && !destroyed){
       event.preventDefault();
-      start = true;
+      if(!start){
+        // ship.vel = vecCirc(Math.PI, 1.5 * u, ship.vel.origin);
+        start = true;
+      }
       burning = true;
     }
     break;
-  case 40: // up
-  case 83: // w
+  case 40: // down
+  case 83: // s
     if(!startScreen && !gameEnd && !paused && !destroyed){
       event.preventDefault();
       burning = true;

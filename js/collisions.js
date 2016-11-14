@@ -27,13 +27,18 @@ var checkAsteroidPlanetCollisions = function(){
   for (var i = 0; i < asteroids.length; i++) {
     var distVec = vecCart(new Point(planet.vel.origin.x - asteroids[i].vel.origin.x, planet.vel.origin.y - asteroids[i].vel.origin.y), planet.vel.origin);
     if(distVec.len <= planet.radius + asteroids[i].maxRadius){
-      if(!gameEnd){
-        var added = Math.round(100 * u / asteroids[i].maxRadius);
-        score += added;
-        new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+      for (var j = 0; j < asteroids[i].arms.length; j++) {
+        if(vecCart(new Point(planet.vel.origin.x - asteroids[i].arms[j].head.x, planet.vel.origin.y - asteroids[i].arms[j].head.y), planet.vel.origin).len <= planet.radius){
+          if(!gameEnd){
+            var added = Math.round(100 * u / asteroids[i].maxRadius);
+            score += added;
+            new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+          }
+          explodeAsteroid(i, distVec.forwardAngle);
+          i -= 1;
+          break;
+        }
       }
-      explodeAsteroid(i, distVec.forwardAngle);
-      i -= 1;
     }
   }
 };
@@ -178,10 +183,9 @@ var explodeAsteroid = function(index, tangentAngle){
     var rad1 = newRad(parentAsteroid.maxRadius);
     var rad2 = newRad(parentAsteroid.maxRadius);
     var rad3 = newRad(parentAsteroid.maxRadius);
-    // var totalRad = rad1 + rad2 + rad3;
-    var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 / rad1));
-    var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 2 * Math.PI / 3, 6 / rad2));
-    var newVec3 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 4 * Math.PI / 3, 6 / rad3));
+    var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 * u * u / rad1));
+    var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 2 * Math.PI / 3, 6 * u * u / rad2));
+    var newVec3 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 4 * Math.PI / 3, 6 * u * u / rad3));
     if(tangentAngle){
       var bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
       newVec1 = addVectors(newVec1, bounce);
@@ -199,9 +203,8 @@ var explodeAsteroid = function(index, tangentAngle){
     parentAsteroid = asteroids[index];
     rad1 = newRad(parentAsteroid.maxRadius);
     rad2 = newRad(parentAsteroid.maxRadius);
-    // totalRad = rad1 + rad2;
-    newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 / rad1));
-    newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, 6 / rad2));
+    newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 * u * u / rad1));
+    newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, 6 * u * u / rad2));
     if(tangentAngle){
       bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
       newVec1 = addVectors(newVec1, bounce);
