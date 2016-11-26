@@ -1,21 +1,22 @@
 'use strict';
 
-var orbs = {
-  canvas: document.getElementById('canvas'),
-  view: {
-    scale: 1,
-    center: {x: canvas.width / 2, y: canvas.height / 2}
-  },
-  unit: canvas.width / (1000 * view.scale),
-  level: 0,
-  totalScore: 0,
-  lives: 3,
-  ship: null,
-  asteroids: [],
-  shots: [],
-  faders: [],
-  planets: [],
+var orbs = {};
+orbs.canvas = document.getElementById('canvasas');
+orbs.ctx = canvas.getContext('2d');
+orbs.view = {
+  scale: 1,
+  center: {x: canvas.width / 2, y: canvas.height / 2}
 };
+orbs.unit = canvas.width / (1000 * orbs.view.scale);
+orbs.level = 0;
+orbs.totalScore = 0;
+orbs.lives = 3;
+orbs.ship = null;
+orbs.asteroids = [];
+orbs.shots = [];
+orbs.faders = [];
+orbs.planets = [];
+orbs.bonuses = [];
 
 // var canvas,
 //   u,

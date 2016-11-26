@@ -323,8 +323,8 @@ orbs.objects = {
     faders.push(this);
   }
 };
-Planet.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
-Ship.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
-Shot.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
-Asteroid.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
-Bonus.prototype = new Orbital(vecCart(), vecCart(), 0, 0);
+orbs.objects.Planet.prototype = new orbs.engine.Orbital(orbs.engine.vecCart(), orbs.engine.vecCart(), 0, 0);
+orbs.objects.Ship.prototype = new orbs.engine.Orbital(orbs.engine.vecCart(), orbs.engine.vecCart(), 0, 0);
+orbs.objects.Shot.prototype = new orbs.engine.Orbital(orbs.engine.vecCart(), orbs.engine.vecCart(), 0, 0);
+orbs.objects.Asteroid.prototype = new orbs.engine.Orbital(orbs.engine.vecCart(), orbs.engine.vecCart(), 0, 0);
+orbs.objects.Bonus.prototype = new orbs.engine.Orbital(orbs.engine.vecCart(), orbs.engine.vecCart(), 0, 0);

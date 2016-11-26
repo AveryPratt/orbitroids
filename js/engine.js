@@ -62,20 +62,20 @@ orbs.engine = {
   },
 
   vecCart: function(head, origin, deltaRot){
-    var vec = new Vector();
+    var vec = new orbs.engine.Vector();
 
     if(origin){vec.origin = origin;
-    }else{vec.origin = new Point(0, 0);}
+    }else{vec.origin = new orbs.engine.Point(0, 0);}
 
     if(head){vec.head = head;}
-    else{vec.head = origin;}
+    else{vec.head = new orbs.engine.Point(vec.origin.x, vec.origin.y);}
 
     if(deltaRot){vec.deltaRot = deltaRot;}
     else{vec.deltaRot = 0;}
 
-    vec.delta = new Point(vec.head.x - vec.origin.x, vec.head.y - vec.origin.y);
+    vec.delta = new orbs.engine.Point(vec.head.x - vec.origin.x, vec.head.y - vec.origin.y);
     vec.len = Math.sqrt(Math.pow(vec.delta.x, 2) + Math.pow(vec.delta.y, 2));
-    var unitDelta = new Point(vec.delta.x / vec.len, vec.delta.y / vec.len);
+    var unitDelta = new orbs.engine.Point(vec.delta.x / vec.len, vec.delta.y / vec.len);
     vec.forwardAngle = Math.asin(unitDelta.x);
     if(unitDelta.y < 0){
       vec.forwardAngle = Math.PI - vec.forwardAngle;
@@ -157,5 +157,5 @@ orbs.engine = {
     };
   }
 };
-orbs.engine.Vector.prototype = new Rotational(0, 0);
-orbs.engine.Orbital.prototype = new Rotational(0, 0);
+orbs.engine.Vector.prototype = new orbs.engine.Rotational(0, 0);
+orbs.engine.Orbital.prototype = new orbs.engine.Rotational(0, 0);
