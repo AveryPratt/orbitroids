@@ -8,7 +8,7 @@ function initializeNameInput(previousName){
 function init(){
   setCanvas();
   setTextarea();
-  orbs.levels[level].setShipTop();
+  orbs.levels[orbs.level].setShipTop();
 }
 function reduceShots(num){
   if(shots.length > num){
