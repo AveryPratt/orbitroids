@@ -1,14 +1,6 @@
 'use strict';
 
 orbs.levels = [
-  // {
-  //   setPlanets: function(){
-  //     var mass = (Math.pow(80 * orbs.unit, 3) / 1200) * orbs.unit;
-  //     planets = [
-  //       new orbs.objects.Planet(mass, 60 * orbs.unit, vecCart(), 0, [0, 80, 255], true)
-  //     ];
-  //   }
-  // },
   {
     setPlanets: function(){
       var mass1 = (Math.pow(80 * orbs.unit, 3) / 1200) * orbs.unit,
