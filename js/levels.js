@@ -5,7 +5,7 @@ orbs.levels = [
   //   setPlanets: function(){
   //     var mass = (Math.pow(80 * orbs.unit, 3) / 1200) * orbs.unit;
   //     planets = [
-  //       new Planet(mass, 60 * orbs.unit, vecCart(), 0, [0, 80, 255], true)
+  //       new orbs.objects.Planet(mass, 60 * orbs.unit, vecCart(), 0, [0, 80, 255], true)
   //     ];
   //   }
   // },
@@ -16,8 +16,8 @@ orbs.levels = [
         totalMass = mass1 + mass2,
         dist = orbs.engine.vecDelta(new orbs.engine.Point(200, 200), new orbs.engine.Point(250, 250));
       orbs.planets = [
-        new Planet(mass1, 60 * orbs.unit, orbs.engine.vecCirc(dist.forwardAngle + Math.PI / 2, findOrbitalVelocity(new Planet(totalMass), dist.len) * mass2 / totalMass, new orbs.engine.Point(320 * orbs.unit, 320 * orbs.unit)), 0, [0, 80, 255], true),
-        new Planet(mass2, 20 * orbs.unit, orbs.engine.vecCirc(dist.forwardAngle - Math.PI / 2, findOrbitalVelocity(new Planet(totalMass), dist.len) * mass1 / totalMass, new orbs.engine.Point(150 * orbs.unit, 150 * orbs.unit)), 0, [80, 80, 80], false)
+        new orbs.objects.Planet(mass1, 60 * orbs.unit, orbs.engine.vecCirc(dist.forwardAngle + Math.PI / 2, orbs.physics.findOrbitalVelocity(new orbs.objects.Planet(totalMass), dist.len) * mass2 / totalMass, new orbs.engine.Point(320 * orbs.unit, 320 * orbs.unit)), 0, [0, 80, 255], true),
+        new orbs.objects.Planet(mass2, 20 * orbs.unit, orbs.engine.vecCirc(dist.forwardAngle - Math.PI / 2, orbs.physics.findOrbitalVelocity(new orbs.objects.Planet(totalMass), dist.len) * mass1 / totalMass, new orbs.engine.Point(150 * orbs.unit, 150 * orbs.unit)), 0, [80, 80, 80], false)
       ];
     },
     setShipTop: function(){
@@ -45,7 +45,7 @@ orbs.levels = [
       else{
         prograde = startingPointVec.forwardAngle - Math.PI / 2;
       }
-      var vel = orbs.engine.vecCirc(prograde, findOrbitalVelocity(planets[planetIndex], startingPointVec.len), startingPointVec.head);
+      var vel = orbs.engine.vecCirc(prograde, orbs.physics.findOrbitalVelocity(planets[planetIndex], startingPointVec.len), startingPointVec.head);
       new Asteroid(vel, maxRadius);
     },
     launchBonus: function(){

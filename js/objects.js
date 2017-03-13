@@ -17,23 +17,23 @@ orbs.objects = {
     this.radius = radius;
     this.mass = mass;
     this.draw = function(){
-      ctx.beginPath();
+      orbs.ctx.beginPath();
       var canvasPoint = this.vel.origin.convert();
-      var planetSunVec = orbs.engine.vecCirc(sunAngle, this.radius * .8, canvasPoint);
-      var planetGrd = ctx.createLinearGradient(planetSunVec.head.x, planetSunVec.head.y, canvasPoint.x, canvasPoint.y);
+      var planetSunVec = orbs.engine.vecCirc(orbs.sunAngle, this.radius * .8, canvasPoint);
+      var planetGrd = orbs.ctx.createLinearGradient(planetSunVec.head.x, planetSunVec.head.y, canvasPoint.x, canvasPoint.y);
       planetGrd.addColorStop(0, 'rgba(' + this.col[0] + ', ' + this.col[1] + ', ' + this.col[2] + ', 1)');
       planetGrd.addColorStop(1, 'rgba(' + Math.round(this.col[0] / 4) + ', ' + Math.round(this.col[1] / 4) + ', ' + Math.round(this.col[2] / 4) + ', 1)');
-      ctx.arc(canvasPoint.x, canvasPoint.y, radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = planetGrd;
-      ctx.fill();
+      orbs.ctx.arc(canvasPoint.x, canvasPoint.y, radius, 0, 2 * Math.PI, false);
+      orbs.ctx.fillStyle = planetGrd;
+      orbs.ctx.fill();
       if(this.atm){
-        var atmoSunVec = orbs.engine.vecCirc(sunAngle, this.radius, canvasPoint);
-        var atmoGrd = ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, canvasPoint.x, canvasPoint.y, this.radius * 1.2);
+        var atmoSunVec = orbs.engine.vecCirc(orbs.sunAngle, this.radius, canvasPoint);
+        var atmoGrd = orbs.ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, canvasPoint.x, canvasPoint.y, this.radius * 1.2);
         atmoGrd.addColorStop(0, 'rgba(255, 255, 255, .5)');
         atmoGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.arc(canvasPoint.x, canvasPoint.y, radius * 1.2, 0, 2 * Math.PI, false);
-        ctx.fillStyle = atmoGrd;
-        ctx.fill();
+        orbs.ctx.arc(canvasPoint.x, canvasPoint.y, radius * 1.2, 0, 2 * Math.PI, false);
+        orbs.ctx.fillStyle = atmoGrd;
+        orbs.ctx.fill();
       }
     };
   },
@@ -78,20 +78,20 @@ orbs.objects = {
           if(!paused){
             this.explosionCount -= 1;
           }
-          ctx.beginPath();
-          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 3.3, 0, 2 * Math.PI, false);
-          ctx.fillStyle = '#ff0000';
-          ctx.fill();
+          orbs.ctx.beginPath();
+          orbs.ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 3.3, 0, 2 * Math.PI, false);
+          orbs.ctx.fillStyle = '#ff0000';
+          orbs.ctx.fill();
 
-          ctx.beginPath();
-          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 5, 0, 2 * Math.PI, false);
-          ctx.fillStyle = '#ff8000';
-          ctx.fill();
+          orbs.ctx.beginPath();
+          orbs.ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 5, 0, 2 * Math.PI, false);
+          orbs.ctx.fillStyle = '#ff8000';
+          orbs.ctx.fill();
 
-          ctx.beginPath();
-          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 10, 0, 2 * Math.PI, false);
-          ctx.fillStyle = '#ffff00';
-          ctx.fill();
+          orbs.ctx.beginPath();
+          orbs.ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 10, 0, 2 * Math.PI, false);
+          orbs.ctx.fillStyle = '#ffff00';
+          orbs.ctx.fill();
         }
         else{
           lives -= 1;
@@ -99,39 +99,39 @@ orbs.objects = {
         }
       }
       else{
-        ctx.beginPath();
-        ctx.moveTo(nosePoint.x, nosePoint.y);
-        ctx.lineTo(leftSidePoint.x, leftSidePoint.y);
-        ctx.lineTo(velPoint.x, velPoint.y);
-        ctx.lineTo(rightSidePoint.x, rightSidePoint.y);
-        ctx.closePath();
-        ctx.lineWidth = 1 * orbs.unit;
-        ctx.strokeStyle = col;
-        ctx.stroke();
+        orbs.ctx.beginPath();
+        orbs.ctx.moveTo(nosePoint.x, nosePoint.y);
+        orbs.ctx.lineTo(leftSidePoint.x, leftSidePoint.y);
+        orbs.ctx.lineTo(velPoint.x, velPoint.y);
+        orbs.ctx.lineTo(rightSidePoint.x, rightSidePoint.y);
+        orbs.ctx.closePath();
+        orbs.ctx.lineWidth = 1 * orbs.unit;
+        orbs.ctx.strokeStyle = col;
+        orbs.ctx.stroke();
         if(this.flame){
           if(dampenBurn){
             var mult = .25;
           }
           else mult = .5;
-          ctx.beginPath();
-          ctx.moveTo(velPoint.x, velPoint.y);
-          ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult) / orbs.unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult) / orbs.unit);
-          ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult) / orbs.unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult) / orbs.unit);
-          ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult) / orbs.unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult) / orbs.unit);
-          ctx.closePath();
-          ctx.lineWidth = 1 * orbs.unit;
-          ctx.fillStyle = '#ff0000';
-          ctx.fill();
+          orbs.ctx.beginPath();
+          orbs.ctx.moveTo(velPoint.x, velPoint.y);
+          orbs.ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult) / orbs.unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult) / orbs.unit);
+          orbs.ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult) / orbs.unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult) / orbs.unit);
+          orbs.ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult) / orbs.unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult) / orbs.unit);
+          orbs.ctx.closePath();
+          orbs.ctx.lineWidth = 1 * orbs.unit;
+          orbs.ctx.fillStyle = '#ff0000';
+          orbs.ctx.fill();
 
-          ctx.beginPath();
-          ctx.moveTo(velPoint.x, velPoint.y);
-          ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult) / orbs.unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult) / orbs.unit);
-          ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * mult) / orbs.unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * mult) / orbs.unit);
-          ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult) / orbs.unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult) / orbs.unit);
-          ctx.closePath();
-          ctx.lineWidth = 1 * orbs.unit;
-          ctx.fillStyle = '#ffff00';
-          ctx.fill();
+          orbs.ctx.beginPath();
+          orbs.ctx.moveTo(velPoint.x, velPoint.y);
+          orbs.ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult) / orbs.unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult) / orbs.unit);
+          orbs.ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * mult) / orbs.unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * mult) / orbs.unit);
+          orbs.ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult) / orbs.unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult) / orbs.unit);
+          orbs.ctx.closePath();
+          orbs.ctx.lineWidth = 1 * orbs.unit;
+          orbs.ctx.fillStyle = '#ffff00';
+          orbs.ctx.fill();
         }
       }
     };
@@ -175,10 +175,10 @@ orbs.objects = {
     this.vel = vel;
     this.draw = function(){
       var velPoint = this.vel.origin.convert();
-      ctx.beginPath();
-      ctx.arc(velPoint.x, velPoint.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
+      orbs.ctx.beginPath();
+      orbs.ctx.arc(velPoint.x, velPoint.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
+      orbs.ctx.fillStyle = '#ffffff';
+      orbs.ctx.fill();
       if(!paused){
         new Fader(this.vel.origin, 1 * orbs.unit, '127, 0, 127', 5, 'circ');
       }
@@ -214,22 +214,22 @@ orbs.objects = {
     };
     this.draw = function(){
       this.alignPoints();
-      ctx.beginPath();
+      orbs.ctx.beginPath();
       var canvasPoints = [];
       for (var i = 0; i < this.arms.length; i++) {
         canvasPoints[i] = this.arms[i].head.convert();
       }
-      ctx.moveTo(canvasPoints[canvasPoints.length - 1].head.x, canvasPoints[canvasPoints.length - 1].head.y);
+      orbs.ctx.moveTo(canvasPoints[canvasPoints.length - 1].head.x, canvasPoints[canvasPoints.length - 1].head.y);
       for (var i = 0; i < canvasPoints.length; i++) {
-        ctx.lineTo(canvasPoints[i].head.x, canvasPoints[i].head.y);
+        orbs.ctx.lineTo(canvasPoints[i].head.x, canvasPoints[i].head.y);
       }
-      ctx.closePath();
-      var sunVec = orbs.engine.vecCirc(sunAngle + Math.PI, this.maxRadius, this.vel.origin);
-      var grd = ctx.createRadialGradient(sunVec.head.x, sunVec.head.y, this.maxRadius, this.vel.origin.x, this.vel.origin.y, this.maxRadius * 2);
+      orbs.ctx.closePath();
+      var sunVec = orbs.engine.vecCirc(orbs.sunAngle + Math.PI, this.maxRadius, this.vel.origin);
+      var grd = orbs.ctx.createRadialGradient(sunVec.head.x, sunVec.head.y, this.maxRadius, this.vel.origin.x, this.vel.origin.y, this.maxRadius * 2);
       grd.addColorStop(0, 'rgba(63, 63, 63, 1)');
       grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
-      ctx.fillStyle = grd;
-      ctx.fill();
+      orbs.ctx.fillStyle = grd;
+      orbs.ctx.fill();
     };
     this.rotate = function(accelRot){
       if(accelRot){this.deltaRot += accelRot;}
@@ -263,37 +263,37 @@ orbs.objects = {
       for (var i = 0; i < thispoints.length; i++) {
         canvasPoints[i] = thispoints[i].head.convert();
       }
-      ctx.beginPath();
+      orbs.ctx.beginPath();
       if(lives === 3){
-        ctx.beginPath();
-        ctx.moveTo(canvasPoints[0].head.x, canvasPoints[0].head.y);
+        orbs.ctx.beginPath();
+        orbs.ctx.moveTo(canvasPoints[0].head.x, canvasPoints[0].head.y);
         for (var i = 1; i < 5; i++) {
-          ctx.lineTo(canvasPoints[i * 3 % 5].head.x, canvasPoints[i * 3 % 5].head.y);
+          orbs.ctx.lineTo(canvasPoints[i * 3 % 5].head.x, canvasPoints[i * 3 % 5].head.y);
         }
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(255, 255, 0, 1)';
-        ctx.fill();
+        orbs.ctx.closePath();
+        orbs.ctx.fillStyle = 'rgba(255, 255, 0, 1)';
+        orbs.ctx.fill();
       }
       else{
-        ctx.beginPath();
-        ctx.moveTo(canvasPoints[0].head.x, canvasPoints[0].head.y);
-        ctx.lineTo(canvasPoints[2].head.x, canvasPoints[2].head.y);
-        ctx.moveTo(canvasPoints[1].head.x, canvasPoints[1].head.y);
-        ctx.lineTo(canvasPoints[3].head.x, canvasPoints[3].head.y);
-        ctx.strokeStyle = 'rgba(0, 255, 255, 1)';
-        ctx.lineWidth = 3 * orbs.unit;
-        ctx.stroke();
-        ctx.lineWidth = 1 * orbs.unit;
+        orbs.ctx.beginPath();
+        orbs.ctx.moveTo(canvasPoints[0].head.x, canvasPoints[0].head.y);
+        orbs.ctx.lineTo(canvasPoints[2].head.x, canvasPoints[2].head.y);
+        orbs.ctx.moveTo(canvasPoints[1].head.x, canvasPoints[1].head.y);
+        orbs.ctx.lineTo(canvasPoints[3].head.x, canvasPoints[3].head.y);
+        orbs.ctx.strokeStyle = 'rgba(0, 255, 255, 1)';
+        orbs.ctx.lineWidth = 3 * orbs.unit;
+        orbs.ctx.stroke();
+        orbs.ctx.lineWidth = 1 * orbs.unit;
       }
-      var sunVec = orbs.engine.vecCirc(sunAngle, 5 * orbs.unit, centerPoint);
-      var grd = ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, centerPoint.x, centerPoint.y);
+      var sunVec = orbs.engine.vecCirc(orbs.sunAngle, 5 * orbs.unit, centerPoint);
+      var grd = orbs.ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, centerPoint.x, centerPoint.y);
       grd.addColorStop(0, 'rgba(255, 255, 255, 1)');
       grd.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = grd;
-      ctx.arc(centerPoint.x, centerPoint.y, 5 * orbs.unit, 0, 2 * Math.PI, false);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, .5)';
-      ctx.stroke();
+      orbs.ctx.fillStyle = grd;
+      orbs.ctx.arc(centerPoint.x, centerPoint.y, 5 * orbs.unit, 0, 2 * Math.PI, false);
+      orbs.ctx.fill();
+      orbs.ctx.strokeStyle = 'rgba(255, 255, 255, .5)';
+      orbs.ctx.stroke();
     };
   },
   Fader: function(origin, size, rgbVals, frameCount, message){
@@ -305,16 +305,16 @@ orbs.objects = {
     this.totalCount = frameCount;
     this.draw = function(){
       var centerPoint = this.origin.convert();
-      ctx.fillStyle = 'rgba(' + rgbVals + ', ' + this.frameCount / this.totalCount + ')';
+      orbs.ctx.fillStyle = 'rgba(' + rgbVals + ', ' + this.frameCount / this.totalCount + ')';
       if(message === 'circ'){
-        ctx.beginPath();
-        ctx.arc(centerPoint.x, centerPoint.y, size, 0, 2 * Math.PI, false);
-        ctx.fill();
+        orbs.ctx.beginPath();
+        orbs.ctx.arc(centerPoint.x, centerPoint.y, size, 0, 2 * Math.PI, false);
+        orbs.ctx.fill();
       }
       else if(typeof message === 'string'){
-        ctx.font = size * orbs.unit + 'px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(message, centerPoint.x, centerPoint.y);
+        orbs.ctx.font = size * orbs.unit + 'px Arial';
+        orbs.ctx.textAlign = 'center';
+        orbs.ctx.fillText(message, centerPoint.x, centerPoint.y);
       }
       if(!paused){
         this.frameCount -= 1;

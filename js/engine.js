@@ -5,7 +5,7 @@ orbs.engine = {
     this.x = x;
     this.y = y;
     this.convert = function(){
-      return {x: view.center.x + (this.x / unit), y: view.center.y - (this.y / unit)};
+      return {x: orbs.view.center.x + (this.x / orbs.unit), y: orbs.view.center.y - (this.y / orbs.unit)};
     };
   },
   Rotational: function(forwardAngle, deltaRot){
@@ -134,26 +134,26 @@ orbs.engine = {
     else{this.deltaRot = 0;}
 
     if(vel){this.vel = vel;}
-    else{this.vel = vecCirc();}
+    else{this.vel = orbs.engine.vecCirc();}
 
     if(accel){this.accel = accel;}
-    else{this.accel = vecCirc();}
+    else{this.accel = orbs.engine.vecCirc();}
 
     this.applyGravity = function(planet){
-      var distVec = vecCart(planet.vel.origin, this.vel.origin);
+      var distVec = orbs.engine.vecCart(planet.vel.origin, this.vel.origin);
       var force = planet.mass / (Math.pow(distVec.len, 2));
-      var forceVec = vecCirc(distVec.forwardAngle, force, this.vel.origin);
+      var forceVec = orbs.engine.vecCirc(distVec.forwardAngle, force, this.vel.origin);
       this.accel.addVector(forceVec);
     };
     this.applyAccel = function(accel){
       this.accel.addVector(accel);
     };
     this.resetAccel = function(){
-      this.accel = vecCirc();
+      this.accel = orbs.engine.vecCirc();
     };
     this.applyMotion = function(){
       this.vel.addVector(this.accel);
-      this.vel = vecDelta(this.vel.delta, this.vel.head, this.vel.deltaRot);
+      this.vel = orbs.engine.vecDelta(this.vel.delta, this.vel.head, this.vel.deltaRot);
     };
   }
 };
