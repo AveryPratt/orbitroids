@@ -57,7 +57,7 @@ orbs.engine = {
     this.addVector = function(vec){
       this.delta.x += vec.delta.x;
       this.delta.y += vec.delta.y;
-      this.head = new Point(this.origin.x + this.delta.x, this.origin.y + this.delta.y);
+      this.head = new orbs.engine.Point(this.origin.x + this.delta.x, this.origin.y + this.delta.y);
     };
   },
 
@@ -84,20 +84,20 @@ orbs.engine = {
     return vec;
   },
   vecDelta: function(delta, origin, deltaRot){
-    var vec = new Vector();
+    var vec = new orbs.engine.Vector();
 
     if(delta){vec.delta = delta;}
-    else{vec.delta = new Point(0, 0);}
+    else{vec.delta = new orbs.engine.Point(0, 0);}
 
     if(origin){vec.origin = origin;
-    }else{vec.origin = new Point(0, 0);}
+    }else{vec.origin = new orbs.engine.Point(0, 0);}
 
     if(deltaRot){vec.deltaRot = deltaRot;}
     else{vec.deltaRot = 0;}
 
-    vec.head = new Point(vec.origin.x + vec.delta.x, vec.origin.y + vec.delta.y);
+    vec.head = new orbs.engine.Point(vec.origin.x + vec.delta.x, vec.origin.y + vec.delta.y);
     vec.len = Math.sqrt(Math.pow(vec.delta.x, 2) + Math.pow(vec.delta.y, 2));
-    var unitDelta = new Point(vec.delta.x / vec.len, vec.delta.y / vec.len);
+    var unitDelta = new orbs.engine.Point(vec.delta.x / vec.len, vec.delta.y / vec.len);
     vec.forwardAngle = Math.asin(unitDelta.x);
     if(unitDelta.y < 0){
       vec.forwardAngle = Math.PI - vec.forwardAngle;
@@ -106,7 +106,7 @@ orbs.engine = {
     return vec;
   },
   vecCirc: function(forwardAngle, len, origin, deltaRot){
-    var vec = new Vector();
+    var vec = new orbs.engine.Vector();
 
     if(forwardAngle){vec.forwardAngle = forwardAngle;}
     else{vec.forwardAngle = 0;}
@@ -115,13 +115,13 @@ orbs.engine = {
     else{vec.len = 0;}
 
     if(origin){vec.origin = origin;}
-    else{vec.origin = new Point(0, 0);}
+    else{vec.origin = new orbs.engine.Point(0, 0);}
 
     if(deltaRot){vec.deltaRot = deltaRot;}
     else{vec.deltaRot = 0;}
 
-    vec.delta = new Point(vec.len * Math.sin(vec.forwardAngle), vec.len * Math.cos(vec.forwardAngle));
-    vec.head = new Point(vec.origin.x + vec.delta.x, vec.origin.y + vec.delta.y);
+    vec.delta = new orbs.engine.Point(vec.len * Math.sin(vec.forwardAngle), vec.len * Math.cos(vec.forwardAngle));
+    vec.head = new orbs.engine.Point(vec.origin.x + vec.delta.x, vec.origin.y + vec.delta.y);
 
     return vec;
   },

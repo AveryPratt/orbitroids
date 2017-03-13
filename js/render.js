@@ -15,7 +15,7 @@ function reduceShots(num){
     var largestDist = 0;
     var indexToRemove;
     for (var i = 0; i < shots.length; i++) {
-      var dist = Math.abs(shots[i].vel.origin.x - planets[0].vel.origin.x) + Math.abs(shots[i].vel.origin.y - planets[0].vel.origin.y);
+      var dist = Math.abs(shots[i].vel.origin.x - orbs.planets[0].vel.origin.x) + Math.abs(shots[i].vel.origin.y - orbs.planets[0].vel.origin.y);
       if(dist > largestDist){
         largestDist = dist;
         indexToRemove = i;
@@ -29,7 +29,7 @@ function reduceAsteroids(num){
     var largestDist = 0;
     var indexToRemove;
     for (var i = 0; i < asteroids.length; i++) {
-      var dist = Math.abs(asteroids[i].vel.origin.x - planets[0].vel.origin.x) + Math.abs(asteroids[i].vel.origin.y - planets[0].vel.origin.y);
+      var dist = Math.abs(asteroids[i].vel.origin.x - orbs.planets[0].vel.origin.x) + Math.abs(asteroids[i].vel.origin.y - orbs.planets[0].vel.origin.y);
       if(dist > largestDist){
         largestDist = dist;
         indexToRemove = i;
@@ -59,44 +59,44 @@ function checkcomplete(){
 }
 
 function checkCollisions(){
-  if(!gameEnd){
-    checkShipEscaped();
-    checkShipPlanetCollision();
-    checkAsteroidShipCollision();
+  if(!orbs.controls.gameEnd){
+    orbs.collisions.checkShipEscaped();
+    orbs.collisions.checkShipPlanetCollision();
+    orbs.collisions.checkAsteroidShipCollision();
     if(bonus && bonus != 'start'){
-      checkBonusShipCollision();
+      orbs.collisions.checkBonusShipCollision();
     }
   }
-  checkShotPlanetCollisions();
-  checkShotAsteroidCollisions();
-  checkAsteroidPlanetCollisions();
-  checkShotShipCollisions();
+  orbs.collisions.checkShotPlanetCollisions();
+  orbs.collisions.checkShotAsteroidCollisions();
+  orbs.collisions.checkAsteroidPlanetCollisions();
+  orbs.collisions.checkShotShipCollisions();
 }
 function renderPlanets(){
-  for (var i = 0; i < planets.length; i++) {
-    planets[i].resetAccel();
-    for (var j = 0; j < planets.length; j++) {
+  for (var i = 0; i < orbs.planets.length; i++) {
+    orbs.planets[i].resetAccel();
+    for (var j = 0; j < orbs.planets.length; j++) {
       if(i !== j){
-        planets[i].applyGravity(planets[j]);
+        orbs.planets[i].applyGravity(orbs.planets[j]);
       }
     }
   }
-  for (var i = 0; i < planets.length; i++) {
-    if(!paused){
-      planets[i].applyMotion();
+  for (var i = 0; i < orbs.planets.length; i++) {
+    if(!orbs.controls.paused){
+      orbs.planets[i].applyMotion();
     }
-    planets[i].draw();
+    orbs.planets[i].draw();
   }
 }
 function renderShip(){
-  if(start && !paused){
+  if(start && !orbs.controls.paused){
     ship.resetAccel();
     if(loaded && !exploded){
       ship.shoot();
       loaded = false;
     }
-    for (var i = 0; i < planets.length; i++) {
-      ship.applyGravity(planets[i]);
+    for (var i = 0; i < orbs.planets.length; i++) {
+      ship.applyGravity(orbs.planets[i]);
     }
     if(burning){
       ship.flame = true;
@@ -132,23 +132,23 @@ function renderStartScreen(){
   name = sessionStorage.getItem('previousName');
   if(name && name != 'null'){
     initializeNameInput(name);
-    startScreen = false;
+    orbs.startScreen = false;
     requestAnimationFrame(renderFrame);
   }
   else{
     initializeNameInput('');
-    if(!newScore){
-      newScore = true;
+    if(!orbs.newScore){
+      orbs.newScore = true;
     }
   }
 }
 function renderAsteroids(){
   for (var i = 0; i < asteroids.length; i++) {
-    if(!paused){
+    if(!orbs.controls.paused){
       asteroids[i].rotate();
       asteroids[i].resetAccel();
-      for (var j = 0; j < planets.length; j++) {
-        asteroids[i].applyGravity(planets[j]);
+      for (var j = 0; j < orbs.planets.length; j++) {
+        asteroids[i].applyGravity(orbs.planets[j]);
       }
       asteroids[i].applyMotion();
     }
@@ -162,10 +162,10 @@ function renderFaders(){
 }
 function renderShots(){
   for (var i = 0; i < shots.length; i++) {
-    if(!paused){
+    if(!orbs.controls.paused){
       shots[i].resetAccel();
-      for (var j = 0; j < planets.length; j++) {
-        shots[i].applyGravity(planets[j]);
+      for (var j = 0; j < orbs.planets.length; j++) {
+        shots[i].applyGravity(orbs.planets[j]);
       }
       shots[i].applyMotion();
     }
@@ -173,11 +173,11 @@ function renderShots(){
   }
 }
 function renderBonus(){
-  if(bonus && bonus !== 'start' && !gameEnd){
-    if(!paused){
+  if(bonus && bonus !== 'start' && !orbs.controls.gameEnd){
+    if(!orbs.controls.paused){
       bonus.resetAccel();
-      for (var i = 0; i < planets.length; i++) {
-        bonus.applyGravity(planets[i]);
+      for (var i = 0; i < orbs.planets.length; i++) {
+        bonus.applyGravity(orbs.planets[i]);
       }
       bonus.applyMotion();
     }
@@ -188,7 +188,7 @@ function renderText(){
   orbs.ctx.strokeStyle = '#ffffff';
   orbs.ctx.lineWidth = orbs.unit;
   orbs.ctx.strokeRect(0, 0, 600 * orbs.unit, 600 * orbs.unit);
-  if(paused){
+  if(orbs.controls.paused){
     orbs.ctx.fillStyle = '#000000';
     orbs.ctx.font = 18 * orbs.unit + 'px Arial';
     orbs.ctx.textAlign = 'center';
@@ -204,12 +204,12 @@ function renderText(){
   orbs.ctx.strokeText('SCORE: ' + score, 590 * orbs.unit, 18 * orbs.unit);
 }
 function renderEndScreen(){
-  if(newScore){
+  if(orbs.newScore){
     var thisFinalScore = new ScoreItem(score, name);
     retrieveScores();
     addScore(thisFinalScore);
     storeScores();
-    newScore = false;
+    orbs.newScore = false;
   }
   orbs.ctx.fillStyle = 'rgba(255, 255, 255, .2)';
   orbs.ctx.fillRect(150 * orbs.unit, 100 * orbs.unit, 300 * orbs.unit, 400 * orbs.unit);
@@ -253,26 +253,26 @@ function setTextarea(){
 }
 
 function renderFrame(){
-  if(startScreen || gameEnd){
+  if(orbs.startScreen || orbs.controls.gameEnd){
     nameInput.style.display = 'block';
   }
   else{
     nameInput.style.display = 'none';
   }
-  if(startScreen){
+  if(orbs.startScreen){
     renderStartScreen();
   }
   else{
     requestAnimationFrame(renderFrame);
     orbs.ctx.clearRect(0, 0, 600 * orbs.unit, 600 * orbs.unit);
-    sunAngle += .0005;
+    orbs.levels[orbs.level].sunAngle += .0005;
     renderPlanets();
-    if(!paused){
+    if(!orbs.controls.paused){
       checkCollisions();
     }
-    if(!gameEnd){
+    if(!orbs.controls.gameEnd){
       renderShip();
-      if(checkcomplete() && !paused){
+      if(checkcomplete() && !orbs.controls.paused){
         addWave();
       }
     }
@@ -281,7 +281,7 @@ function renderFrame(){
     renderShots();
     renderBonus();
     renderText();
-    if(gameEnd){
+    if(orbs.controls.gameEnd){
       renderEndScreen();
     }
 

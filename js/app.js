@@ -17,6 +17,9 @@ orbs.shots = [];
 orbs.faders = [];
 orbs.planets = [];
 orbs.bonuses = [];
+orbs.startScreen = true;
+orbs.newScore = false;
+orbs.sunAngle = 0;
 
 // var canvas,
 //   u,

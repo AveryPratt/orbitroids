@@ -3,7 +3,7 @@
 orbs.objects = {
   Planet: function(mass, radius, vel, deltaRot, col, atm){
     if(vel){this.vel = vel;}
-    else{this.vel = vecCirc();}
+    else{this.vel = orbs.engine.vecCirc();}
 
     if(deltaRot){this.deltaRot = deltaRot;}
     else{this.deltaRot = 0;}
@@ -19,7 +19,7 @@ orbs.objects = {
     this.draw = function(){
       ctx.beginPath();
       var canvasPoint = this.vel.origin.convert();
-      var planetSunVec = vecCirc(sunAngle, this.radius * .8, canvasPoint);
+      var planetSunVec = orbs.engine.vecCirc(sunAngle, this.radius * .8, canvasPoint);
       var planetGrd = ctx.createLinearGradient(planetSunVec.head.x, planetSunVec.head.y, canvasPoint.x, canvasPoint.y);
       planetGrd.addColorStop(0, 'rgba(' + this.col[0] + ', ' + this.col[1] + ', ' + this.col[2] + ', 1)');
       planetGrd.addColorStop(1, 'rgba(' + Math.round(this.col[0] / 4) + ', ' + Math.round(this.col[1] / 4) + ', ' + Math.round(this.col[2] / 4) + ', 1)');
@@ -27,7 +27,7 @@ orbs.objects = {
       ctx.fillStyle = planetGrd;
       ctx.fill();
       if(this.atm){
-        var atmoSunVec = vecCirc(sunAngle, this.radius, canvasPoint);
+        var atmoSunVec = orbs.engine.vecCirc(sunAngle, this.radius, canvasPoint);
         var atmoGrd = ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, canvasPoint.x, canvasPoint.y, this.radius * 1.2);
         atmoGrd.addColorStop(0, 'rgba(255, 255, 255, .5)');
         atmoGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -45,7 +45,7 @@ orbs.objects = {
     this.exploded = false;
     this.trueAnom = 0;
 
-    this.accel = vecCirc();
+    this.accel = orbs.engine.vecCirc();
 
     this.nose;
     this.leftSide;
@@ -59,7 +59,7 @@ orbs.objects = {
     else{this.deltaRot = 0;}
 
     if(vel){this.vel = vel;}
-    else{this.vel = vecCirc();}
+    else{this.vel = orbs.engine.vecCirc();}
 
     if(col){this.col = col;}
     else{this.col = '#ffffff';}
@@ -79,17 +79,17 @@ orbs.objects = {
             this.explosionCount -= 1;
           }
           ctx.beginPath();
-          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * unit / 3.3, 0, 2 * Math.PI, false);
+          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 3.3, 0, 2 * Math.PI, false);
           ctx.fillStyle = '#ff0000';
           ctx.fill();
 
           ctx.beginPath();
-          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * unit / 5, 0, 2 * Math.PI, false);
+          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 5, 0, 2 * Math.PI, false);
           ctx.fillStyle = '#ff8000';
           ctx.fill();
 
           ctx.beginPath();
-          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * unit / 10, 0, 2 * Math.PI, false);
+          ctx.arc(velPoint.x, velPoint.y, this.explosionCount * orbs.unit / 10, 0, 2 * Math.PI, false);
           ctx.fillStyle = '#ffff00';
           ctx.fill();
         }
@@ -105,7 +105,7 @@ orbs.objects = {
         ctx.lineTo(velPoint.x, velPoint.y);
         ctx.lineTo(rightSidePoint.x, rightSidePoint.y);
         ctx.closePath();
-        ctx.lineWidth = 1 * unit;
+        ctx.lineWidth = 1 * orbs.unit;
         ctx.strokeStyle = col;
         ctx.stroke();
         if(this.flame){
@@ -115,32 +115,32 @@ orbs.objects = {
           else mult = .5;
           ctx.beginPath();
           ctx.moveTo(velPoint.x, velPoint.y);
-          ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult) / unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult) / unit);
-          ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult) / unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult) / unit);
-          ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult) / unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult) / unit);
+          ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * mult) / orbs.unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * mult) / orbs.unit);
+          ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * 2 * mult) / orbs.unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * 2 * mult) / orbs.unit);
+          ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * mult) / orbs.unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * mult) / orbs.unit);
           ctx.closePath();
-          ctx.lineWidth = 1 * unit;
+          ctx.lineWidth = 1 * orbs.unit;
           ctx.fillStyle = '#ff0000';
           ctx.fill();
 
           ctx.beginPath();
           ctx.moveTo(velPoint.x, velPoint.y);
-          ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult) / unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult) / unit);
-          ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * mult) / unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * mult) / unit);
-          ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult) / unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult) / unit);
+          ctx.lineTo(leftSidePoint.x - (this.leftSide.delta.x - this.leftSide.delta.x * .5 * mult) / orbs.unit, leftSidePoint.y - (this.leftSide.delta.y - this.leftSide.delta.y * .5 * mult) / orbs.unit);
+          ctx.lineTo(rearPoint.x - (this.rear.delta.x - this.rear.delta.x * mult) / orbs.unit, rearPoint.y - (this.rear.delta.y - this.rear.delta.y * mult) / orbs.unit);
+          ctx.lineTo(rightSidePoint.x - (this.rightSide.delta.x - this.rightSide.delta.x * .5 * mult) / orbs.unit, rightSidePoint.y - (this.rightSide.delta.y - this.rightSide.delta.y * .5 * mult) / orbs.unit);
           ctx.closePath();
-          ctx.lineWidth = 1 * unit;
+          ctx.lineWidth = 1 * orbs.unit;
           ctx.fillStyle = '#ffff00';
           ctx.fill();
         }
       }
     };
     this.alignPoints = function(){
-      this.nose = vecCirc(this.forwardAngle, 10 * unit, this.vel.origin);
-      this.rear = vecCirc(this.forwardAngle - Math.PI, 10 * unit, this.vel.origin);
-      this.leftSide = vecCirc(this.forwardAngle + 5 * Math.PI / 6, 10 * unit, this.vel.origin);
+      this.nose = orbs.engine.vecCirc(this.forwardAngle, 10 * orbs.unit, this.vel.origin);
+      this.rear = orbs.engine.vecCirc(this.forwardAngle - Math.PI, 10 * orbs.unit, this.vel.origin);
+      this.leftSide = orbs.engine.vecCirc(this.forwardAngle + 5 * Math.PI / 6, 10 * orbs.unit, this.vel.origin);
       this.leftSide.refineForwardAngle();
-      this.rightSide = vecCirc(this.forwardAngle + 7 * Math.PI / 6, 10 * unit, this.vel.origin);
+      this.rightSide = orbs.engine.vecCirc(this.forwardAngle + 7 * Math.PI / 6, 10 * orbs.unit, this.vel.origin);
       this.rightSide.refineForwardAngle();
     };
     this.rotate = function(accelRot){
@@ -153,7 +153,7 @@ orbs.objects = {
     };
     this.applyMotion = function(){
       this.vel.addVector(this.accel);
-      this.vel = vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
+      this.vel = orbs.engine.vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
       this.trueAnom = vecCart(this.vel.origin, planets[0].origin);
       if(!this.trueAnom.forwardAngle){
         this.trueAnom.forwardAngle = 0;
@@ -161,12 +161,12 @@ orbs.objects = {
       this.alignPoints();
     };
     this.burn = function(force){
-      var forceVec = vecCirc(this.forwardAngle, force);
+      var forceVec = orbs.engine.vecCirc(this.forwardAngle, force);
       this.accel.addVector(forceVec);
     };
     this.shoot = function(){
-      this.accel.addVector(vecCirc(this.forwardAngle - Math.PI, .5 * unit));
-      var projection = vecCirc(this.forwardAngle, 2.5 * unit, this.nose.head).addVector(this.vel);
+      this.accel.addVector(vecCirc(this.forwardAngle - Math.PI, .5 * orbs.unit));
+      var projection = orbs.engine.vecCirc(this.forwardAngle, 2.5 * orbs.unit, this.nose.head).addVector(this.vel);
       new Shot(projection);
     };
     this.alignPoints();
@@ -176,40 +176,40 @@ orbs.objects = {
     this.draw = function(){
       var velPoint = this.vel.origin.convert();
       ctx.beginPath();
-      ctx.arc(velPoint.x, velPoint.y, 1.5 * unit, 0, 2 * Math.PI, false);
+      ctx.arc(velPoint.x, velPoint.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
       ctx.fillStyle = '#ffffff';
       ctx.fill();
       if(!paused){
-        new Fader(this.vel.origin, 1 * unit, '127, 0, 127', 5, 'circ');
+        new Fader(this.vel.origin, 1 * orbs.unit, '127, 0, 127', 5, 'circ');
       }
     };
     shots.push(this);
   },
   Asteroid: function(vel, maxRadius, roughness, deltaRot, forwardAngle){
     if(vel){this.vel = vel;}
-    else{this.vel = vecCirc();}
+    else{this.vel = orbs.engine.vecCirc();}
 
     if(maxRadius){this.maxRadius = maxRadius;}
-    else{this.maxRadius = (Math.random() * 20 + 40) * unit;}
+    else{this.maxRadius = (Math.random() * 20 + 40) * orbs.unit;}
 
     if(roughness){this.roughness = roughness;}
     else{this.roughness = .5;}
 
     if(deltaRot){this.deltaRot = deltaRot;}
-    else{this.deltaRot = (Math.random() - .5) / (this.maxRadius / unit);}
+    else{this.deltaRot = (Math.random() - .5) / (this.maxRadius / orbs.unit);}
 
     if(forwardAngle){this.forwardAngle = forwardAngle;}
     else{this.forwardAngle = 0;}
 
     this.arms = [];
     this.armLengths = [];
-    for (var i = 0; i < 1 + Math.sqrt(this.maxRadius / unit); i++) {
+    for (var i = 0; i < 1 + Math.sqrt(this.maxRadius / orbs.unit); i++) {
       this.armLengths[i] = this.maxRadius - Math.random() * this.maxRadius * this.roughness;
     }
     this.alignPoints = function(){
       for (var i = 0; i < this.armLengths.length; i++) {
         var angle = this.forwardAngle + i * 2 * Math.PI / this.armLengths.length;
-        this.arms[i] = vecCirc(angle, this.armLengths[i], this.vel.origin, this.deltaRot);
+        this.arms[i] = orbs.engine.vecCirc(angle, this.armLengths[i], this.vel.origin, this.deltaRot);
       }
     };
     this.draw = function(){
@@ -224,7 +224,7 @@ orbs.objects = {
         ctx.lineTo(canvasPoints[i].head.x, canvasPoints[i].head.y);
       }
       ctx.closePath();
-      var sunVec = vecCirc(sunAngle + Math.PI, this.maxRadius, this.vel.origin);
+      var sunVec = orbs.engine.vecCirc(sunAngle + Math.PI, this.maxRadius, this.vel.origin);
       var grd = ctx.createRadialGradient(sunVec.head.x, sunVec.head.y, this.maxRadius, this.vel.origin.x, this.vel.origin.y, this.maxRadius * 2);
       grd.addColorStop(0, 'rgba(63, 63, 63, 1)');
       grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
@@ -241,18 +241,18 @@ orbs.objects = {
   },
   Bonus: function(vel){
     if(vel){this.vel = vel;}
-    else{this.vel = vecCirc();}
+    else{this.vel = orbs.engine.vecCirc();}
 
     this.points = [];
     this.alignPoints = function(){
       if(lives === 3){
         for (var i = 0; i < 5; i++) {
-          this.points[i] = vecCirc(Math.PI + i * 2 * Math.PI / 5, 5 * unit, this.vel.origin);
+          this.points[i] = orbs.engine.vecCirc(Math.PI + i * 2 * Math.PI / 5, 5 * orbs.unit, this.vel.origin);
         }
       }
       else{
         for (var i = 0; i < 4; i++) {
-          this.points[i] = vecCirc(Math.PI + i * Math.PI / 2, 5 * unit, this.vel.origin);
+          this.points[i] = orbs.engine.vecCirc(Math.PI + i * Math.PI / 2, 5 * orbs.unit, this.vel.origin);
         }
       }
     };
@@ -281,16 +281,16 @@ orbs.objects = {
         ctx.moveTo(canvasPoints[1].head.x, canvasPoints[1].head.y);
         ctx.lineTo(canvasPoints[3].head.x, canvasPoints[3].head.y);
         ctx.strokeStyle = 'rgba(0, 255, 255, 1)';
-        ctx.lineWidth = 3 * unit;
+        ctx.lineWidth = 3 * orbs.unit;
         ctx.stroke();
-        ctx.lineWidth = 1 * unit;
+        ctx.lineWidth = 1 * orbs.unit;
       }
-      var sunVec = vecCirc(sunAngle, 5 * unit, centerPoint);
+      var sunVec = orbs.engine.vecCirc(sunAngle, 5 * orbs.unit, centerPoint);
       var grd = ctx.createLinearGradient(sunVec.head.x, sunVec.head.y, centerPoint.x, centerPoint.y);
       grd.addColorStop(0, 'rgba(255, 255, 255, 1)');
       grd.addColorStop(1, 'rgba(255, 255, 255, 0)');
       ctx.fillStyle = grd;
-      ctx.arc(centerPoint.x, centerPoint.y, 5 * unit, 0, 2 * Math.PI, false);
+      ctx.arc(centerPoint.x, centerPoint.y, 5 * orbs.unit, 0, 2 * Math.PI, false);
       ctx.fill();
       ctx.strokeStyle = 'rgba(255, 255, 255, .5)';
       ctx.stroke();
@@ -312,7 +312,7 @@ orbs.objects = {
         ctx.fill();
       }
       else if(typeof message === 'string'){
-        ctx.font = size * unit + 'px Arial';
+        ctx.font = size * orbs.unit + 'px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(message, centerPoint.x, centerPoint.y);
       }
