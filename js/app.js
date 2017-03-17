@@ -9,6 +9,7 @@ orbs.view = {
 };
 orbs.unit = canvas.width / (1000 * orbs.view.scale);
 orbs.level = 0;
+orbs.score = 0;
 orbs.totalScore = 0;
 orbs.lives = 3;
 orbs.ship = null;

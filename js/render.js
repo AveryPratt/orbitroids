@@ -25,17 +25,17 @@ function reduceShots(num){
   }
 }
 function reduceAsteroids(num){
-  if(asteroids.length > num){
+  if(orbs.asteroids.length > num){
     var largestDist = 0;
     var indexToRemove;
-    for (var i = 0; i < asteroids.length; i++) {
-      var dist = Math.abs(asteroids[i].vel.origin.x - orbs.planets[0].vel.origin.x) + Math.abs(asteroids[i].vel.origin.y - orbs.planets[0].vel.origin.y);
+    for (var i = 0; i < orbs.asteroids.length; i++) {
+      var dist = Math.abs(orbs.asteroids[i].vel.origin.x - orbs.planets[0].vel.origin.x) + Math.abs(orbs.asteroids[i].vel.origin.y - orbs.planets[0].vel.origin.y);
       if(dist > largestDist){
         largestDist = dist;
         indexToRemove = i;
       }
     }
-    asteroids.splice(indexToRemove, 1);
+    orbs.asteroids.splice(indexToRemove, 1);
   }
 }
 function expireFaders(){
@@ -50,8 +50,8 @@ function expireFaders(){
   }
 }
 function checkcomplete(){
-  for (var i = 0; i < asteroids.length; i++) {
-    if(asteroids[i].vel.origin.x < 1000 * orbs.unit && asteroids[i].vel.origin.y < 1000 * orbs.unit && asteroids[i].vel.origin.x > 0 && asteroids[i].vel.origin.y > 0){
+  for (var i = 0; i < orbs.asteroids.length; i++) {
+    if(orbs.asteroids[i].vel.origin.x < 1000 * orbs.unit && orbs.asteroids[i].vel.origin.y < 1000 * orbs.unit && orbs.asteroids[i].vel.origin.x > 0 && orbs.asteroids[i].vel.origin.y > 0){
       return false;
     }
   }
@@ -63,7 +63,7 @@ function checkCollisions(){
     orbs.collisions.checkShipEscaped();
     orbs.collisions.checkShipPlanetCollision();
     orbs.collisions.checkAsteroidShipCollision();
-    if(bonus && bonus != 'start'){
+    if(orbs.bonuses[0] && orbs.bonuses[0] != 'start'){
       orbs.collisions.checkBonusShipCollision();
     }
   }
@@ -89,44 +89,44 @@ function renderPlanets(){
   }
 }
 function renderShip(){
-  if(start && !orbs.controls.paused){
-    ship.resetAccel();
+  if(orbs.start && !orbs.controls.paused){
+    orbs.ship.resetAccel();
     if(loaded && !exploded){
-      ship.shoot();
+      orbs.ship.shoot();
       loaded = false;
     }
     for (var i = 0; i < orbs.planets.length; i++) {
-      ship.applyGravity(orbs.planets[i]);
+      orbs.ship.applyGravity(orbs.planets[i]);
     }
     if(burning){
-      ship.flame = true;
+      orbs.ship.flame = true;
       if(dampenBurn){
-        ship.burn(.02 * orbs.unit);
+        orbs.ship.burn(.02 * orbs.unit);
       }
       else{
-        ship.burn(.06 * orbs.unit);
+        orbs.ship.burn(.06 * orbs.unit);
       }
     }
     else{
-      ship.flame = false;
+      orbs.ship.flame = false;
     }
     if(dampenRot){
-      if(ship.deltaRot < -.003){
-        ship.deltaRot += .001;
+      if(orbs.ship.deltaRot < -.003){
+        orbs.ship.deltaRot += .001;
       }
-      else if(ship.deltaRot > .003){
-        ship.deltaRot -= .001;
+      else if(orbs.ship.deltaRot > .003){
+        orbs.ship.deltaRot -= .001;
       }
       else{
-        ship.deltaRot = 0;
+        orbs.ship.deltaRot = 0;
       }
     }
-    ship.rotate(rot);
+    orbs.ship.rotate(rot);
     if(!exploded){
-      ship.applyMotion();
+      orbs.ship.applyMotion();
     }
   }
-  ship.draw();
+  orbs.ship.draw();
 }
 function renderStartScreen(){
   name = sessionStorage.getItem('previousName');
@@ -143,16 +143,16 @@ function renderStartScreen(){
   }
 }
 function renderAsteroids(){
-  for (var i = 0; i < asteroids.length; i++) {
+  for (var i = 0; i < orbs.asteroids.length; i++) {
     if(!orbs.controls.paused){
-      asteroids[i].rotate();
-      asteroids[i].resetAccel();
+      orbs.asteroids[i].rotate();
+      orbs.asteroids[i].resetAccel();
       for (var j = 0; j < orbs.planets.length; j++) {
-        asteroids[i].applyGravity(orbs.planets[j]);
+        orbs.asteroids[i].applyGravity(orbs.planets[j]);
       }
-      asteroids[i].applyMotion();
+      orbs.asteroids[i].applyMotion();
     }
-    asteroids[i].draw();
+    orbs.asteroids[i].draw();
   }
 }
 function renderFaders(){
@@ -173,15 +173,15 @@ function renderShots(){
   }
 }
 function renderBonus(){
-  if(bonus && bonus !== 'start' && !orbs.controls.gameEnd){
+  if(orbs.bonuses[0] && orbs.bonuses[0] !== 'start' && !orbs.controls.gameEnd){
     if(!orbs.controls.paused){
-      bonus.resetAccel();
+      orbs.bonuses[0].resetAccel();
       for (var i = 0; i < orbs.planets.length; i++) {
-        bonus.applyGravity(orbs.planets[i]);
+        orbs.bonuses[0].applyGravity(orbs.planets[i]);
       }
-      bonus.applyMotion();
+      orbs.bonuses[0].applyMotion();
     }
-    bonus.draw();
+    orbs.bonuses[0].draw();
   }
 }
 function renderText(){
@@ -273,7 +273,7 @@ function renderFrame(){
     if(!orbs.controls.gameEnd){
       renderShip();
       if(checkcomplete() && !orbs.controls.paused){
-        addWave();
+        orbs.levels[0].addWave();
       }
     }
     renderAsteroids();

@@ -2,29 +2,29 @@
 
 orbs.collisions = {
   checkShipEscaped: function(){
-    if(orbs.ship.vel.origin.x <= 0 || orbs.ship.vel.origin.x >= 600 * u || orbs.ship.vel.origin.y <= 0 || orbs.ship.vel.origin.y >= 600 * u){
-      exploded = true;
+    if(orbs.ship.vel.origin.x <= 0 || orbs.ship.vel.origin.x >= 600 * orbs.unit || orbs.ship.vel.origin.y <= 0 || orbs.ship.vel.origin.y >= 600 * orbs.unit){
+      orbs.exploded = true;
     }
   },
   checkShipPlanetCollision: function(){
-    for (var i = 0; i < planets.length; i++) {
-      if(vecCart(orbs.ship.vel.origin, planets[i].vel.origin).len < planets[i].radius + 10 * u){
-        var noseVec = vecCart(orbs.ship.nose.head, planets[i].vel.origin);
-        var leftSideVec = vecCart(orbs.ship.leftSide.head, planets[i].vel.origin);
-        var rightSideVec = vecCart(orbs.ship.rightSide.head, planets[i].vel.origin);
-        if(noseVec.len <= planets[i].radius || leftSideVec.len <= planets[i].radius || rightSideVec.len <= planets[i].radius){
-          exploded = true;
+    for (var i = 0; i < orbs.planets.length; i++) {
+      if(orbs.engine.vecCart(orbs.ship.vel.origin, orbs.planets[i].vel.origin).len < orbs.planets[i].radius + 10 * orbs.unit){
+        var noseVec = orbs.engine.vecCart(orbs.ship.nose.head, orbs.planets[i].vel.origin);
+        var leftSideVec = orbs.engine.vecCart(orbs.ship.leftSide.head, orbs.planets[i].vel.origin);
+        var rightSideVec = orbs.engine.vecCart(orbs.ship.rightSide.head, orbs.planets[i].vel.origin);
+        if(noseVec.len <= orbs.planets[i].radius || leftSideVec.len <= orbs.planets[i].radius || rightSideVec.len <= orbs.planets[i].radius){
+          orbs.exploded = true;
           new Fader(orbs.ship.vel.origin, 12, '255, 0, 0', 100, '-1');
         }
       }
     }
   },
   checkShotPlanetCollisions: function(){
-    for (var i = 0; i < shots.length; i++) {
-      for (var j = 0; j < planets.length; j++) {
-        var distVec = vecCart(shots[i].vel.origin, planets[j].vel.origin);
-        if(distVec.len <= planets[j].radius){
-          shots.splice(i, 1);
+    for (var i = 0; i < orbs.shots.length; i++) {
+      for (var j = 0; j < orbs.planets.length; j++) {
+        var distVec = orbs.engine.vecCart(orbs.shots[i].vel.origin, orbs.planets[j].vel.origin);
+        if(distVec.len <= orbs.planets[j].radius){
+          orbs.shots.splice(i, 1);
           i -= 1;
           break;
         }
@@ -32,17 +32,17 @@ orbs.collisions = {
     }
   },
   checkAsteroidPlanetCollisions: function(){
-    for (var i = 0; i < asteroids.length; i++) {
+    for (var i = 0; i < orbs.asteroids.length; i++) {
       var asteroidExploded = false;
-      for (var j = 0; j < planets.length; j++) {
-        var distVec = vecCart(asteroids[i].vel.origin, planets[j].vel.origin);
-        if(distVec.len <= planets[j].radius + asteroids[i].maxRadius){
-          for (var k = 0; k < asteroids[i].arms.length; k++) {
-            if(vecCart(asteroids[i].arms[k].head, planets[j].vel.origin).len <= planets[j].radius){
+      for (var j = 0; j < orbs.planets.length; j++) {
+        var distVec = orbs.engine.vecCart(orbs.asteroids[i].vel.origin, orbs.planets[j].vel.origin);
+        if(distVec.len <= orbs.planets[j].radius + orbs.asteroids[i].maxRadius){
+          for (var k = 0; k < orbs.asteroids[i].arms.length; k++) {
+            if(orbs.engine.vecCart(orbs.asteroids[i].arms[k].head, orbs.planets[j].vel.origin).len <= orbs.planets[j].radius){
               if(!gameEnd){
-                var added = Math.round(100 * u / asteroids[i].maxRadius);
+                var added = Math.round(100 * orbs.unit / orbs.asteroids[i].maxRadius);
                 score += added;
-                new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+                new Fader(orbs.asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
               }
               explodeAsteroid(i, distVec.forwardAngle);
               asteroidExploded = true;
@@ -58,26 +58,26 @@ orbs.collisions = {
     }
   },
   checkAsteroidShipCollision: function(){
-    if(!exploded && !destroyed){
-      for (var i = 0; i < asteroids.length; i++) {
-        if(vecCart(orbs.ship.vel.origin, asteroids[i].vel.origin).len < asteroids[i].maxRadius + 10 * u){
-          var noseVec = vecCart(orbs.ship.nose.head, asteroids[i].vel.origin);
-          var leftSideVec = vecCart(orbs.ship.leftSide.head, asteroids[i].vel.origin);
-          var rightSideVec = vecCart(orbs.ship.rightSide.head, asteroids[i].vel.origin);
+    if(!orbs.exploded && !orbs.destroyed){
+      for (var i = 0; i < orbs.asteroids.length; i++) {
+        if(orbs.engine.vecCart(orbs.ship.vel.origin, orbs.asteroids[i].vel.origin).len < orbs.asteroids[i].maxRadius + 10 * orbs.unit){
+          var noseVec = orbs.engine.vecCart(orbs.ship.nose.head, orbs.asteroids[i].vel.origin);
+          var leftSideVec = orbs.engine.vecCart(orbs.ship.leftSide.head, orbs.asteroids[i].vel.origin);
+          var rightSideVec = orbs.engine.vecCart(orbs.ship.rightSide.head, orbs.asteroids[i].vel.origin);
           var shipVecs = [noseVec, leftSideVec, rightSideVec];
           var asteroidVecs = [];
-          for (var j = 0; j < asteroids[i].arms.length; j++) {
-            asteroidVecs.push(vecCart(asteroids[i].arms[j].head, orbs.ship.vel.origin));
+          for (var j = 0; j < orbs.asteroids[i].arms.length; j++) {
+            asteroidVecs.push(orbs.engine.vecCart(orbs.asteroids[i].arms[j].head, orbs.ship.vel.origin));
           }
           for (var j = 0; j < shipVecs.length; j++) {
-            if(shipVecs[j].len <= asteroids[i].maxRadius){
-              if(checkPointInsidePolygon(shipVecs[j].head, asteroidVecs)){
-                exploded = true;
+            if(shipVecs[j].len <= orbs.asteroids[i].maxRadius){
+              if(orbs.collisions.checkPointInsidePolygon(shipVecs[j].head, asteroidVecs)){
+                orbs.exploded = true;
                 new Fader(orbs.ship.vel.origin, 12, '255, 0, 0', 100, '-1');
                 if(!gameEnd){
-                  var added = Math.round(100 * u / asteroids[i].maxRadius);
+                  var added = Math.round(100 * orbs.unit / orbs.asteroids[i].maxRadius);
                   score += added;
-                  new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+                  new Fader(orbs.asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
                 }
                 explodeAsteroid(i);
                 i -= 1;
@@ -85,16 +85,16 @@ orbs.collisions = {
               }
             }
           }
-          if(!exploded){
+          if(!orbs.exploded){
             for (var j = 0; j < asteroidVecs.length; j++) {
-              if(asteroidVecs[j].len <= 10 * u){
-                if(checkPointInsidePolygon(asteroidVecs[j].head, shipVecs)){
-                  exploded = true;
+              if(asteroidVecs[j].len <= 10 * orbs.unit){
+                if(orbs.collisions.checkPointInsidePolygon(asteroidVecs[j].head, shipVecs)){
+                  orbs.exploded = true;
                   new Fader(orbs.ship.vel.origin, 12, '255, 0, 0', 100, '-1');
                   if(!gameEnd){
-                    added = Math.round(100 * u / asteroids[i].maxRadius);
+                    added = Math.round(100 * orbs.unit / orbs.asteroids[i].maxRadius);
                     score += added;
-                    new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+                    new Fader(orbs.asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
                   }
                   explodeAsteroid(i);
                   i -= 1;
@@ -108,19 +108,19 @@ orbs.collisions = {
     }
   },
   checkShotAsteroidCollisions: function(){
-    for (var i = 0; i < asteroids.length; i++) {
-      for (var j = 0; j < shots.length; j++) {
-        var distVec = vecCart(asteroids[i].vel.origin, shots[j].vel.origin);
-        if(distVec.len < asteroids[i].maxRadius){
-          if(checkPointInsidePolygon(shots[j].vel.origin, asteroids[i].arms)){
+    for (var i = 0; i < orbs.asteroids.length; i++) {
+      for (var j = 0; j < orbs.shots.length; j++) {
+        var distVec = orbs.engine.vecCart(orbs.asteroids[i].vel.origin, orbs.shots[j].vel.origin);
+        if(distVec.len < orbs.asteroids[i].maxRadius){
+          if(orbs.collisions.checkPointInsidePolygon(orbs.shots[j].vel.origin, orbs.asteroids[i].arms)){
             if(!gameEnd){
-              var added = Math.round(100 * u / asteroids[i].maxRadius) * 10;
+              var added = Math.round(100 * orbs.unit / orbs.asteroids[i].maxRadius) * 10;
               score += added;
-              new Fader(asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
+              new Fader(orbs.asteroids[i].vel.origin, 8, '255, 255, 0', 50, '+' + added);
             }
             explodeAsteroid(i);
             i -= 1;
-            shots.splice(j, 1);
+            orbs.shots.splice(j, 1);
             // j -= 1;
             break;
           }
@@ -129,16 +129,16 @@ orbs.collisions = {
     }
   },
   checkShotShipCollisions: function(){
-    for (var i = 0; i < shots.length; i++) {
-      if(vecCart(orbs.ship.vel.origin, shots[i].vel.origin).len < 10 * u){
-        var noseVec = vecCart(orbs.ship.nose.head, shots[i].vel.origin);
-        var leftSideVec = vecCart(orbs.ship.leftSide.head, shots[i].vel.origin);
-        var rightSideVec = vecCart(orbs.ship.rightSide.head, shots[i].vel.origin);
+    for (var i = 0; i < orbs.shots.length; i++) {
+      if(orbs.engine.vecCart(orbs.ship.vel.origin, orbs.shots[i].vel.origin).len < 10 * orbs.unit){
+        var noseVec = orbs.engine.vecCart(orbs.ship.nose.head, orbs.shots[i].vel.origin);
+        var leftSideVec = orbs.engine.vecCart(orbs.ship.leftSide.head, orbs.shots[i].vel.origin);
+        var rightSideVec = orbs.engine.vecCart(orbs.ship.rightSide.head, orbs.shots[i].vel.origin);
         var shipVecs = [noseVec, leftSideVec, rightSideVec];
-        if(checkPointInsidePolygon(shots[i].vel.origin, shipVecs)){
-          exploded = true;
+        if(orbs.collisions.checkPointInsidePolygon(orbs.shots[i].vel.origin, shipVecs)){
+          orbs.exploded = true;
           new Fader(orbs.ship.vel.origin, 12, '255, 0, 0', 100, '-1');
-          shots.splice(i, 1);
+          orbs.shots.splice(i, 1);
           i -= 1;
         }
       }
@@ -149,7 +149,7 @@ orbs.collisions = {
     var temp;
     var total = 0;
     for (var i = 0; i < vecArr.length; i++) {
-      angles.push(vecCart(point, vecArr[i].head).forwardAngle);
+      angles.push(orbs.engine.vecCart(point, vecArr[i].head).forwardAngle);
     }
     temp = angles[angles.length - 1];
     for (var i = 0; i < angles.length; i++) {
@@ -173,9 +173,9 @@ orbs.collisions = {
     }
   },
   checkBonusShipCollision: function(){
-    if(!destroyed && !exploded){
-      var dist = vecCart(orbs.ship.vel.origin, bonus.vel.origin).len;
-      if(dist < 10 * u){
+    if(!orbs.destroyed && !orbs.exploded){
+      var dist = orbs.engine.vecCart(orbs.ship.vel.origin, bonus.vel.origin).len;
+      if(dist < 10 * orbs.unit){
         if(lives === 3){
           invincible = true;
           if(!gameEnd){
@@ -192,14 +192,14 @@ orbs.collisions = {
     }
   },
   explodeAsteroid: function(index, tangentAngle){
-    if(asteroids[index].maxRadius >= 30 * u){
-      var parentAsteroid = asteroids[index];
+    if(orbs.asteroids[index].maxRadius >= 30 * orbs.unit){
+      var parentAsteroid = orbs.asteroids[index];
       var rad1 = newRad(parentAsteroid.maxRadius);
       var rad2 = newRad(parentAsteroid.maxRadius);
       var rad3 = newRad(parentAsteroid.maxRadius);
-      var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 * u * u / rad1));
-      var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 2 * Math.PI / 3, 6 * u * u / rad2));
-      var newVec3 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 4 * Math.PI / 3, 6 * u * u / rad3));
+      var newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 * orbs.unit * orbs.unit / rad1));
+      var newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 2 * Math.PI / 3, 6 * orbs.unit * orbs.unit / rad2));
+      var newVec3 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + 4 * Math.PI / 3, 6 * orbs.unit * orbs.unit / rad3));
       if(tangentAngle){
         var bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
         newVec1 = addVectors(newVec1, bounce);
@@ -213,12 +213,12 @@ orbs.collisions = {
       new Asteroid(newVec2, rad2);
       new Asteroid(newVec3, rad3);
     }
-    else if(asteroids[index].maxRadius >= 15 * u){
-      parentAsteroid = asteroids[index];
+    else if(orbs.asteroids[index].maxRadius >= 15 * orbs.unit){
+      parentAsteroid = orbs.asteroids[index];
       rad1 = newRad(parentAsteroid.maxRadius);
       rad2 = newRad(parentAsteroid.maxRadius);
-      newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 * u * u / rad1));
-      newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, 6 * u * u / rad2));
+      newVec1 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle, 6 * orbs.unit * orbs.unit / rad1));
+      newVec2 = addVectors(parentAsteroid.vel, vecCirc(parentAsteroid.forwardAngle + Math.PI, 6 * orbs.unit * orbs.unit / rad2));
       if(tangentAngle){
         bounce = vecCirc(tangentAngle, -Math.abs(Math.cos(tangentAngle - parentAsteroid.vel.forwardAngle)));
         newVec1 = addVectors(newVec1, bounce);
@@ -229,7 +229,7 @@ orbs.collisions = {
       new Asteroid(newVec1, rad1);
       new Asteroid(newVec2, rad2);
     }
-    asteroids.splice(index, 1);
+    orbs.asteroids.splice(index, 1);
   },
   newRad: function(oldRad){
     return (Math.random() / 3 + 1 / 3) * oldRad;

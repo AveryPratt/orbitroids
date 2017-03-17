@@ -16,10 +16,10 @@ orbs.levels = [
       orbs.start = false;
       orbs.destroyed = false;
       var shipVel = orbs.engine.vecCirc(Math.PI, 0, new orbs.engine.Point(300 * orbs.unit, 599 * orbs.unit));
-      orbs.ship = new orbs.objects.Ship(Math.PI, 0, shipVel, '#ffffff');
+      orbs.ship = new orbs.objects.Ship(shipVel, Math.PI, 0, '#ffffff');
     },
     launchAsteroid: function(planetIndex, alt, placement, direction, maxRadius){
-      if(!start){
+      if(!orbs.start){
         var startAngle = Math.random() * 2 * Math.PI;
       }
       else{
@@ -30,15 +30,15 @@ orbs.levels = [
           startAngle = ship.trueAnom.forwardAngle + Math.PI;
         }
       }
-      var startingPointVec = orbs.engine.vecCirc(startAngle, alt, planets[planetIndex].vel.origin);
+      var startingPointVec = orbs.engine.vecCirc(startAngle, alt, orbs.planets[planetIndex].vel.origin);
       if(direction){
         var prograde = startingPointVec.forwardAngle + Math.PI / 2;
       }
       else{
         prograde = startingPointVec.forwardAngle - Math.PI / 2;
       }
-      var vel = orbs.engine.vecCirc(prograde, orbs.physics.findOrbitalVelocity(planets[planetIndex], startingPointVec.len), startingPointVec.head);
-      new Asteroid(vel, maxRadius);
+      var vel = orbs.engine.vecCirc(prograde, orbs.physics.findOrbitalVelocity(orbs.planets[planetIndex], startingPointVec.len), startingPointVec.head);
+      new orbs.objects.Asteroid(vel, maxRadius);
     },
     launchBonus: function(){
       var vel = orbs.engine.vecDelta(new orbs.engine.Point(0, 0), new orbs.engine.Point(300 * orbs.unit, 300 * orbs.unit));
@@ -49,13 +49,13 @@ orbs.levels = [
         var direction = true;
       }
       else direction = false;
-      for (var i = 0, inc = 0; i <= score; inc += 1000, i += inc) {
-        if(score >= i){
-          launchAsteroid(0, 150 * orbs.unit, Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction, 40 * orbs.unit);
+      for (var i = 0, inc = 0; i <= orbs.score; inc += 1000, i += inc) {
+        if(orbs.score >= i){
+          orbs.levels[0].launchAsteroid(0, 150 * orbs.unit, Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction, 40 * orbs.unit);
         }
       }
       if(bonus === null){
-        launchBonus();
+        orbs.levels[0].launchBonus();
       }
       else if(bonus === 'start'){
         bonus = null;

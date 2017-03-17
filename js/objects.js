@@ -217,11 +217,11 @@ orbs.objects = {
       orbs.ctx.beginPath();
       var canvasPoints = [];
       for (var i = 0; i < this.arms.length; i++) {
-        canvasPoints[i] = this.arms[i].head.convert();
+        canvasPoints[i] = this.arms[i].convert();
       }
-      orbs.ctx.moveTo(canvasPoints[canvasPoints.length - 1].head.x, canvasPoints[canvasPoints.length - 1].head.y);
+      orbs.ctx.moveTo(canvasPoints[canvasPoints.length - 1].x, canvasPoints[canvasPoints.length - 1].y);
       for (var i = 0; i < canvasPoints.length; i++) {
-        orbs.ctx.lineTo(canvasPoints[i].head.x, canvasPoints[i].head.y);
+        orbs.ctx.lineTo(canvasPoints[i].x, canvasPoints[i].y);
       }
       orbs.ctx.closePath();
       var sunVec = orbs.engine.vecCirc(orbs.sunAngle + Math.PI, this.maxRadius, this.vel.origin);
@@ -237,7 +237,7 @@ orbs.objects = {
       this.refineForwardAngle();
     };
     this.alignPoints();
-    asteroids.push(this);
+    orbs.asteroids.push(this);
   },
   Bonus: function(vel){
     if(vel){this.vel = vel;}
@@ -266,9 +266,9 @@ orbs.objects = {
       orbs.ctx.beginPath();
       if(lives === 3){
         orbs.ctx.beginPath();
-        orbs.ctx.moveTo(canvasPoints[0].head.x, canvasPoints[0].head.y);
+        orbs.ctx.moveTo(canvasPoints[0].x, canvasPoints[0].y);
         for (var i = 1; i < 5; i++) {
-          orbs.ctx.lineTo(canvasPoints[i * 3 % 5].head.x, canvasPoints[i * 3 % 5].head.y);
+          orbs.ctx.lineTo(canvasPoints[i * 3 % 5].x, canvasPoints[i * 3 % 5].y);
         }
         orbs.ctx.closePath();
         orbs.ctx.fillStyle = 'rgba(255, 255, 0, 1)';
@@ -276,10 +276,10 @@ orbs.objects = {
       }
       else{
         orbs.ctx.beginPath();
-        orbs.ctx.moveTo(canvasPoints[0].head.x, canvasPoints[0].head.y);
-        orbs.ctx.lineTo(canvasPoints[2].head.x, canvasPoints[2].head.y);
-        orbs.ctx.moveTo(canvasPoints[1].head.x, canvasPoints[1].head.y);
-        orbs.ctx.lineTo(canvasPoints[3].head.x, canvasPoints[3].head.y);
+        orbs.ctx.moveTo(canvasPoints[0].x, canvasPoints[0].y);
+        orbs.ctx.lineTo(canvasPoints[2].x, canvasPoints[2].y);
+        orbs.ctx.moveTo(canvasPoints[1].x, canvasPoints[1].y);
+        orbs.ctx.lineTo(canvasPoints[3].x, canvasPoints[3].y);
         orbs.ctx.strokeStyle = 'rgba(0, 255, 255, 1)';
         orbs.ctx.lineWidth = 3 * orbs.unit;
         orbs.ctx.stroke();
