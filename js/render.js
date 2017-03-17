@@ -11,17 +11,17 @@ function init(){
   orbs.levels[orbs.level].setShipTop();
 }
 function reduceShots(num){
-  if(shots.length > num){
+  if(orbs.shots.length > num){
     var largestDist = 0;
     var indexToRemove;
-    for (var i = 0; i < shots.length; i++) {
-      var dist = Math.abs(shots[i].vel.origin.x - orbs.planets[0].vel.origin.x) + Math.abs(shots[i].vel.origin.y - orbs.planets[0].vel.origin.y);
+    for (var i = 0; i < orbs.shots.length; i++) {
+      var dist = Math.abs(orbs.shots[i].vel.origin.x - orbs.planets[0].vel.origin.x) + Math.abs(orbs.shots[i].vel.origin.y - orbs.planets[0].vel.origin.y);
       if(dist > largestDist){
         largestDist = dist;
         indexToRemove = i;
       }
     }
-    shots.splice(indexToRemove, 1);
+    orbs.shots.splice(indexToRemove, 1);
   }
 }
 function reduceAsteroids(num){
@@ -40,13 +40,13 @@ function reduceAsteroids(num){
 }
 function expireFaders(){
   var removeFaders = [];
-  for (var i = 0; i < faders.length; i++) {
-    if(faders[i].frameCount <= 0){
+  for (var i = 0; i < orbs.faders.length; i++) {
+    if(orbs.faders[i].frameCount <= 0){
       removeFaders.push(i);
     }
   }
   for (var i = removeFaders.length - 1; i >= 0; i--) {
-    faders.splice(removeFaders[i], 1);
+    orbs.faders.splice(removeFaders[i], 1);
   }
 }
 function checkcomplete(){
@@ -156,20 +156,20 @@ function renderAsteroids(){
   }
 }
 function renderFaders(){
-  for (var i = 0; i < faders.length; i++) {
-    faders[i].draw();
+  for (var i = 0; i < orbs.faders.length; i++) {
+    orbs.faders[i].draw();
   }
 }
 function renderShots(){
-  for (var i = 0; i < shots.length; i++) {
+  for (var i = 0; i < orbs.shots.length; i++) {
     if(!orbs.controls.paused){
-      shots[i].resetAccel();
+      orbs.shots[i].resetAccel();
       for (var j = 0; j < orbs.planets.length; j++) {
-        shots[i].applyGravity(orbs.planets[j]);
+        orbs.shots[i].applyGravity(orbs.planets[j]);
       }
-      shots[i].applyMotion();
+      orbs.shots[i].applyMotion();
     }
-    shots[i].draw();
+    orbs.shots[i].draw();
   }
 }
 function renderBonus(){
@@ -197,15 +197,15 @@ function renderText(){
   orbs.ctx.strokeStyle = '#00ffff';
   orbs.ctx.font = 12 * orbs.unit + 'px Arial';
   orbs.ctx.textAlign = 'left';
-  orbs.ctx.strokeText('LIVES: ' + lives, 10 * orbs.unit, 18 * orbs.unit);
+  orbs.ctx.strokeText('LIVES: ' + orbs.lives, 10 * orbs.unit, 18 * orbs.unit);
 
   orbs.ctx.strokeStyle = '#ffff00';
   orbs.ctx.textAlign = 'right';
-  orbs.ctx.strokeText('SCORE: ' + score, 590 * orbs.unit, 18 * orbs.unit);
+  orbs.ctx.strokeText('SCORE: ' + orbs.score, 590 * orbs.unit, 18 * orbs.unit);
 }
 function renderEndScreen(){
   if(orbs.newScore){
-    var thisFinalScore = new ScoreItem(score, name);
+    var thisFinalScore = new ScoreItem(orbs.score, name);
     retrieveScores();
     addScore(thisFinalScore);
     storeScores();
@@ -223,7 +223,7 @@ function renderEndScreen(){
   orbs.ctx.textAlign = 'center';
   var scoreSelected = false;
   for (var i = 0; i < scores.length; i++) {
-    if(!scoreSelected && scores[i].finalScore === score && scores[i].name === name){
+    if(!scoreSelected && scores[i].finalScore === orbs.score && scores[i].name === name){
       orbs.ctx.fillStyle = '#ff0000';
       scoreSelected = true;
     }
@@ -285,8 +285,8 @@ function renderFrame(){
       renderEndScreen();
     }
 
-    reduceShots(maxShots);
-    reduceAsteroids(maxAsteroids);
+    reduceShots(orbs.maxShots);
+    reduceAsteroids(orbs.maxAsteroids);
     expireFaders();
   }
 }

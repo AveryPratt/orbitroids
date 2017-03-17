@@ -217,7 +217,7 @@ orbs.objects = {
       orbs.ctx.beginPath();
       var canvasPoints = [];
       for (var i = 0; i < this.arms.length; i++) {
-        canvasPoints[i] = this.arms[i].convert();
+        canvasPoints[i] = this.arms[i].head;
       }
       orbs.ctx.moveTo(canvasPoints[canvasPoints.length - 1].x, canvasPoints[canvasPoints.length - 1].y);
       for (var i = 0; i < canvasPoints.length; i++) {
@@ -316,11 +316,11 @@ orbs.objects = {
         orbs.ctx.textAlign = 'center';
         orbs.ctx.fillText(message, centerPoint.x, centerPoint.y);
       }
-      if(!paused){
+      if(!orbs.controls.paused){
         this.frameCount -= 1;
       }
     };
-    faders.push(this);
+    orbs.faders.push(this);
   }
 };
 orbs.objects.Planet.prototype = new orbs.engine.Orbital(orbs.engine.vecCart(), orbs.engine.vecCart(), 0, 0);

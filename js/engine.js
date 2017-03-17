@@ -125,6 +125,13 @@ orbs.engine = {
 
     return vec;
   },
+  addVectors: function(vec1, vec2){
+    var delta = {
+      x: vec1.delta.x + vec2.delta.x,
+      y: vec1.delta.y + vec2.delta.y
+    };
+    return orbs.engine.vecDelta(delta, vec1.origin);
+  },
 
   Orbital: function(vel, accel, forwardAngle, deltaRot){
     if(forwardAngle){this.forwardAngle = forwardAngle;}

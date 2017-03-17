@@ -42,7 +42,7 @@ orbs.levels = [
     },
     launchBonus: function(){
       var vel = orbs.engine.vecDelta(new orbs.engine.Point(0, 0), new orbs.engine.Point(300 * orbs.unit, 300 * orbs.unit));
-      bonus = new Bonus(vel);
+      orbs.bonuses[0] = new Bonus(vel);
     },
     addWave: function(){
       if(Math.random() > .5){
@@ -54,11 +54,11 @@ orbs.levels = [
           orbs.levels[0].launchAsteroid(0, 150 * orbs.unit, Math.PI / 3 + Math.random() * 1.5 * Math.PI, direction, 40 * orbs.unit);
         }
       }
-      if(bonus === null){
+      if(orbs.bonuses[0] === null){
         orbs.levels[0].launchBonus();
       }
-      else if(bonus === 'start'){
-        bonus = null;
+      else if(orbs.bonuses[0] === 'start'){
+        orbs.bonuses[0] = null;
       }
     }
   }
