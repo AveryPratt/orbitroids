@@ -51,7 +51,10 @@ function expireFaders(){
 }
 function checkcomplete(){
   for (var i = 0; i < orbs.asteroids.length; i++) {
-    if(orbs.asteroids[i].vel.origin.x < 1000 * orbs.unit && orbs.asteroids[i].vel.origin.y < 1000 * orbs.unit && orbs.asteroids[i].vel.origin.x > 0 && orbs.asteroids[i].vel.origin.y > 0){
+    if(orbs.asteroids[i].vel.origin.x < 300 * orbs.unit / orbs.view.scale &&
+      orbs.asteroids[i].vel.origin.y < 300 * orbs.unit / orbs.view.scale &&
+      orbs.asteroids[i].vel.origin.x > -300 * orbs.unit / orbs.view.scale &&
+      orbs.asteroids[i].vel.origin.y > -300 * orbs.unit / orbs.view.scale){
       return false;
     }
   }
@@ -247,6 +250,7 @@ function setCanvas(){
     orbs.ctx.canvas.height = window.innerWidth;
     orbs.unit = window.innerWidth / 600;
   }
+  orbs.view.center = {x: canvas.width / 2, y: canvas.height / 2};
 }
 function setTextarea(){
   nameInput.style.margin = 400 * orbs.unit + 'px 50%';

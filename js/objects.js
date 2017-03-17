@@ -18,20 +18,20 @@ orbs.objects = {
     this.mass = mass;
     this.draw = function(){
       orbs.ctx.beginPath();
-      var canvasPoint = this.vel.origin.convert();
-      var planetSunVec = orbs.engine.vecCirc(orbs.sunAngle, this.radius * .8, canvasPoint);
+      var canvasPoint = orbs.view.convert(this.vel.origin);
+      var planetSunVec = orbs.engine.vecCirc(orbs.sunAngle, this.radius * orbs.view.scale * .8, canvasPoint);
       var planetGrd = orbs.ctx.createLinearGradient(planetSunVec.head.x, planetSunVec.head.y, canvasPoint.x, canvasPoint.y);
       planetGrd.addColorStop(0, 'rgba(' + this.col[0] + ', ' + this.col[1] + ', ' + this.col[2] + ', 1)');
       planetGrd.addColorStop(1, 'rgba(' + Math.round(this.col[0] / 4) + ', ' + Math.round(this.col[1] / 4) + ', ' + Math.round(this.col[2] / 4) + ', 1)');
-      orbs.ctx.arc(canvasPoint.x, canvasPoint.y, radius, 0, 2 * Math.PI, false);
+      orbs.ctx.arc(canvasPoint.x, canvasPoint.y, radius * orbs.view.scale, 0, 2 * Math.PI, false);
       orbs.ctx.fillStyle = planetGrd;
       orbs.ctx.fill();
       if(this.atm){
-        var atmoSunVec = orbs.engine.vecCirc(orbs.sunAngle, this.radius, canvasPoint);
-        var atmoGrd = orbs.ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, canvasPoint.x, canvasPoint.y, this.radius * 1.2);
+        var atmoSunVec = orbs.engine.vecCirc(orbs.sunAngle, this.radius * orbs.view.scale, canvasPoint);
+        var atmoGrd = orbs.ctx.createRadialGradient(atmoSunVec.head.x, atmoSunVec.head.y, 0, canvasPoint.x, canvasPoint.y, this.radius * orbs.view.scale * 1.2);
         atmoGrd.addColorStop(0, 'rgba(255, 255, 255, .5)');
         atmoGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        orbs.ctx.arc(canvasPoint.x, canvasPoint.y, radius * 1.2, 0, 2 * Math.PI, false);
+        orbs.ctx.arc(canvasPoint.x, canvasPoint.y, radius * orbs.view.scale * 1.2, 0, 2 * Math.PI, false);
         orbs.ctx.fillStyle = atmoGrd;
         orbs.ctx.fill();
       }
@@ -65,11 +65,11 @@ orbs.objects = {
     else{this.col = '#ffffff';}
 
     this.draw = function(){
-      var velPoint = this.vel.origin.convert();
-      var nosePoint = this.nose.head.convert();
-      var leftSidePoint = this.leftSide.head.convert();
-      var rightSidePoint = this.rightSide.head.convert();
-      var rearPoint = this.rear.head.convert();
+      var velPoint = orbs.view.convert(this.vel.origin);
+      var nosePoint = orbs.view.convert(this.nose.head);
+      var leftSidePoint = orbs.view.convert(this.leftSide.head);
+      var rightSidePoint = orbs.view.convert(this.rightSide.head);
+      var rearPoint = orbs.view.convert(this.rear.head);
       if(this.exploded){
         if(typeof this.explosionCount !== 'number'){
           this.explosionCount = 50;
@@ -174,7 +174,7 @@ orbs.objects = {
   Shot: function(vel){
     this.vel = vel;
     this.draw = function(){
-      var velPoint = this.vel.origin.convert();
+      var velPoint = orbs.view.convert(this.vel.origin);
       orbs.ctx.beginPath();
       orbs.ctx.arc(velPoint.x, velPoint.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
       orbs.ctx.fillStyle = '#ffffff';
@@ -217,15 +217,16 @@ orbs.objects = {
       orbs.ctx.beginPath();
       var canvasPoints = [];
       for (var i = 0; i < this.arms.length; i++) {
-        canvasPoints[i] = this.arms[i].head;
+        canvasPoints[i] = orbs.view.convert(this.arms[i].head);
       }
       orbs.ctx.moveTo(canvasPoints[canvasPoints.length - 1].x, canvasPoints[canvasPoints.length - 1].y);
       for (var i = 0; i < canvasPoints.length; i++) {
         orbs.ctx.lineTo(canvasPoints[i].x, canvasPoints[i].y);
       }
       orbs.ctx.closePath();
-      var sunVec = orbs.engine.vecCirc(orbs.sunAngle + Math.PI, this.maxRadius, this.vel.origin);
-      var grd = orbs.ctx.createRadialGradient(sunVec.head.x, sunVec.head.y, this.maxRadius, this.vel.origin.x, this.vel.origin.y, this.maxRadius * 2);
+      var convertedOrigin = orbs.view.convert(this.vel.origin);
+      var sunVec = orbs.engine.vecCirc(orbs.sunAngle + Math.PI, this.maxRadius, convertedOrigin);
+      var grd = orbs.ctx.createRadialGradient(sunVec.head.x, sunVec.head.y, this.maxRadius, convertedOrigin.x, convertedOrigin.y, this.maxRadius * 2);
       grd.addColorStop(0, 'rgba(63, 63, 63, 1)');
       grd.addColorStop(1, 'rgba(255, 255, 255, 1)');
       orbs.ctx.fillStyle = grd;
@@ -258,10 +259,10 @@ orbs.objects = {
     };
     this.draw = function(){
       this.alignPoints();
-      var centerPoint = this.vel.origin.convert();
+      var centerPoint = orbs.view.convert(this.vel.origin);
       var canvasPoints = [];
       for (var i = 0; i < thispoints.length; i++) {
-        canvasPoints[i] = thispoints[i].head.convert();
+        canvasPoints[i] = orbs.view.convert(thispoints[i].head);
       }
       orbs.ctx.beginPath();
       if(lives === 3){
@@ -304,7 +305,7 @@ orbs.objects = {
     this.frameCount = frameCount;
     this.totalCount = frameCount;
     this.draw = function(){
-      var centerPoint = this.origin.convert();
+      var centerPoint = orbs.view.convert(this.origin);
       orbs.ctx.fillStyle = 'rgba(' + rgbVals + ', ' + this.frameCount / this.totalCount + ')';
       if(message === 'circ'){
         orbs.ctx.beginPath();

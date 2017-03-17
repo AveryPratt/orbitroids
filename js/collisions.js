@@ -2,7 +2,7 @@
 
 orbs.collisions = {
   checkShipEscaped: function(){
-    if(orbs.ship.vel.origin.x <= 0 || orbs.ship.vel.origin.x >= 600 * orbs.unit || orbs.ship.vel.origin.y <= 0 || orbs.ship.vel.origin.y >= 600 * orbs.unit){
+    if(orbs.ship.vel.origin.x <= -300 * orbs.unit || orbs.ship.vel.origin.x >= 300 * orbs.unit || orbs.ship.vel.origin.y <= -300 || orbs.ship.vel.origin.y >= 300 * orbs.unit){
       orbs.exploded = true;
     }
   },
