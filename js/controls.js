@@ -1,7 +1,8 @@
 'use strict';
 
 orbs.controls = {
-  started: false,
+  flying: false,
+  gameStart: false,
   gameEnd: false,
   paused: false,
   burning: false,
@@ -12,12 +13,13 @@ orbs.controls = {
   handleKeydown: function(event){
     switch(event.keyCode){
     case 13: // enter
-      if(!orbs.controls.started){
+      if(!orbs.controls.gameStart){
         event.preventDefault();
         orbs.startScreen = false;
         name = nameInput.value;
         sessionStorage.setItem('previousName', name);
         orbs.levels[orbs.level].setPlanets();
+        orbs.controls.gameStart = true;
         renderFrame();
       }
       else if(orbs.controls.gameEnd){
@@ -36,18 +38,18 @@ orbs.controls = {
       break;
     case 38: // up
     case 87: // w
-      if(orbs.controls.started && !orbs.controls.gameEnd && !orbs.controls.paused && ship){
+      if(orbs.controls.gameStart && !orbs.controls.gameEnd && !orbs.controls.paused && orbs.ship){
         event.preventDefault();
-        if(!start){
-          // ship.vel = vecCirc(Math.PI, 1.5 * u, ship.vel.origin);
-          start = true;
+        if(!orbs.controls.flying){
+          // orbs.ship.vel = vecCirc(Math.PI, 1.5 * u, orbs.ship.vel.origin);
+          orbs.controls.flying = true;
         }
         orbs.controls.burning = true;
       }
       break;
     case 40: // down
     case 83: // s
-      if(orbs.controls.started && !orbs.controls.gameEnd && !orbs.controls.paused && ship){
+      if(orbs.controls.gameStart && !orbs.controls.gameEnd && !orbs.controls.paused && orbs.ship){
         event.preventDefault();
         orbs.controls.burning = true;
         orbs.controls.dampenBurn = true;
@@ -55,14 +57,14 @@ orbs.controls = {
       break;
     case 37: // left
     case 65: // a
-      if(orbs.controls.started && !orbs.controls.gameEnd && !orbs.controls.paused && ship){
+      if(orbs.controls.gameStart && !orbs.controls.gameEnd && !orbs.controls.paused && orbs.ship){
         event.preventDefault();
         orbs.controls.rot = .003;
       }
       break;
     case 39: // right
     case 68: // d
-      if(orbs.controls.started && !orbs.controls.gameEnd && !orbs.controls.paused && ship){
+      if(orbs.controls.gameStart && !orbs.controls.gameEnd && !orbs.controls.paused && orbs.ship){
         event.preventDefault();
         orbs.controls.rot = -.003;
       }
@@ -73,7 +75,7 @@ orbs.controls = {
         if(destroyed){
           destroyed = false;
         }
-        else if(start){
+        else if(orbs.controls.flying){
           orbs.controls.loaded = true;
         }
       }

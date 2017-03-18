@@ -154,7 +154,7 @@ orbs.objects = {
     this.applyMotion = function(){
       this.vel.addVector(this.accel);
       this.vel = orbs.engine.vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
-      this.trueAnom = vecCart(this.vel.origin, planets[0].origin);
+      this.trueAnom = orbs.engine.vecCart(this.vel.origin, orbs.planets[0].origin);
       if(!this.trueAnom.forwardAngle){
         this.trueAnom.forwardAngle = 0;
       }

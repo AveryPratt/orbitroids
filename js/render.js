@@ -92,18 +92,17 @@ function renderPlanets(){
   }
 }
 function renderShip(){
-  if(orbs.start && !orbs.controls.paused){
+  if(orbs.controls.flying && !orbs.controls.paused){
     orbs.ship.resetAccel();
-    if(loaded && !exploded){
+    if(orbs.ship.loaded && !orbs.ship.exploded){
       orbs.ship.shoot();
-      loaded = false;
+      orbs.ship.loaded = false;
     }
     for (var i = 0; i < orbs.planets.length; i++) {
       orbs.ship.applyGravity(orbs.planets[i]);
     }
-    if(burning){
-      orbs.ship.flame = true;
-      if(dampenBurn){
+    if(orbs.ship.burning){
+      if(orbs.ship.dampenBurn){
         orbs.ship.burn(.02 * orbs.unit);
       }
       else{
@@ -113,7 +112,7 @@ function renderShip(){
     else{
       orbs.ship.flame = false;
     }
-    if(dampenRot){
+    if(orbs.ship.dampenRot){
       if(orbs.ship.deltaRot < -.003){
         orbs.ship.deltaRot += .001;
       }
@@ -124,8 +123,8 @@ function renderShip(){
         orbs.ship.deltaRot = 0;
       }
     }
-    orbs.ship.rotate(rot);
-    if(!exploded){
+    orbs.ship.rotate(orbs.controls.rot);
+    if(!orbs.ship.exploded){
       orbs.ship.applyMotion();
     }
   }
