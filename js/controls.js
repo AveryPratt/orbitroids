@@ -5,7 +5,7 @@ orbs.controls = {
   gameStart: false,
   gameEnd: false,
   paused: false,
-  burning: false,
+  // burning: false,
   dampenBurn: false,
   rot: 0,
   dampenRot: false,
@@ -44,15 +44,15 @@ orbs.controls = {
           // orbs.ship.vel = vecCirc(Math.PI, 1.5 * u, orbs.ship.vel.origin);
           orbs.controls.flying = true;
         }
-        orbs.controls.burning = true;
+        orbs.ship.burning = true;
       }
       break;
     case 40: // down
     case 83: // s
       if(orbs.controls.gameStart && !orbs.controls.gameEnd && !orbs.controls.paused && orbs.ship){
         event.preventDefault();
-        orbs.controls.burning = true;
-        orbs.controls.dampenBurn = true;
+        orbs.ship.burning = true;
+        orbs.ship.dampenBurn = true;
       }
       break;
     case 37: // left
@@ -72,11 +72,11 @@ orbs.controls = {
     case 32: // space
       if(!orbs.controls.gameEnd){
         event.preventDefault();
-        if(destroyed){
-          destroyed = false;
+        if(orbs.ship.destroyed){
+          orbs.ship.destroyed = false;
         }
         else if(orbs.controls.flying){
-          orbs.controls.loaded = true;
+          orbs.ship.loaded = true;
         }
       }
       break;
@@ -103,7 +103,12 @@ orbs.controls = {
       break;
     case 38: // up
     case 87: // w
-      orbs.controls.burning = false;
+      orbs.ship.burning = false;
+      break;
+    case 40: // down
+    case 83: // s
+      orbs.ship.burning = false;
+      orbs.ship.dampenBurn = false;
       break;
     case 37: // left
     case 65: // a
@@ -112,11 +117,6 @@ orbs.controls = {
     case 39: // right
     case 68: // d
       orbs.controls.rot = 0;
-      break;
-    case 40: // up
-    case 83: // w
-      orbs.controls.burning = false;
-      orbs.controls.dampenBurn = false;
       break;
     default:
       break;

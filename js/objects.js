@@ -44,6 +44,7 @@ orbs.objects = {
     this.loaded = false;
     this.exploded = false;
     this.trueAnom = 0;
+    this.destroyed = false;
 
     this.accel = orbs.engine.vecCirc();
 
@@ -108,8 +109,8 @@ orbs.objects = {
         orbs.ctx.lineWidth = 1 * orbs.unit;
         orbs.ctx.strokeStyle = col;
         orbs.ctx.stroke();
-        if(this.flame){
-          if(dampenBurn){
+        if(this.burning){
+          if(this.dampenBurn){
             var mult = .25;
           }
           else mult = .5;
@@ -152,6 +153,8 @@ orbs.objects = {
       this.refineForwardAngle();
     };
     this.applyMotion = function(){
+      // console.log('vel: ' + this.vel.delta.x + ', ' + this.vel.delta.y);
+      // console.log('accel: ' + this.accel.delta.x + ', ' + this.accel.delta.y);
       this.vel.addVector(this.accel);
       this.vel = orbs.engine.vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
       this.trueAnom = orbs.engine.vecCart(this.vel.origin, orbs.planets[0].origin);
@@ -165,9 +168,10 @@ orbs.objects = {
       this.accel.addVector(forceVec);
     };
     this.shoot = function(){
-      this.accel.addVector(vecCirc(this.forwardAngle - Math.PI, .5 * orbs.unit));
-      var projection = orbs.engine.vecCirc(this.forwardAngle, 2.5 * orbs.unit, this.nose.head).addVector(this.vel);
-      new Shot(projection);
+      this.accel.addVector(orbs.engine.vecCirc(this.forwardAngle - Math.PI, .5 * orbs.unit));
+      var projection = orbs.engine.vecCirc(this.forwardAngle, 2.5 * orbs.unit, this.nose.head);
+      projection.addVector(this.vel);
+      new orbs.objects.Shot(projection);
     };
     this.alignPoints();
   },
@@ -179,11 +183,11 @@ orbs.objects = {
       orbs.ctx.arc(velPoint.x, velPoint.y, 1.5 * orbs.unit, 0, 2 * Math.PI, false);
       orbs.ctx.fillStyle = '#ffffff';
       orbs.ctx.fill();
-      if(!paused){
-        new Fader(this.vel.origin, 1 * orbs.unit, '127, 0, 127', 5, 'circ');
+      if(!orbs.controls.paused){
+        new orbs.objects.Fader(this.vel.origin, 1 * orbs.unit, '127, 0, 127', 5, 'circ');
       }
     };
-    shots.push(this);
+    orbs.shots.push(this);
   },
   Asteroid: function(vel, maxRadius, roughness, deltaRot, forwardAngle){
     if(vel){this.vel = vel;}
