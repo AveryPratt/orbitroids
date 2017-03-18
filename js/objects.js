@@ -156,7 +156,7 @@ orbs.objects = {
       // console.log('vel: ' + this.vel.delta.x + ', ' + this.vel.delta.y);
       // console.log('accel: ' + this.accel.delta.x + ', ' + this.accel.delta.y);
       this.vel.addVector(this.accel);
-      this.vel = orbs.engine.vecCirc(this.vel.forwardAngle, this.vel.len, this.vel.head, this.vel.deltaRot);
+      this.vel = orbs.engine.vecDelta(this.vel.delta, this.vel.head, this.vel.deltaRot);
       this.trueAnom = orbs.engine.vecCart(this.vel.origin, orbs.planets[0].origin);
       if(!this.trueAnom.forwardAngle){
         this.trueAnom.forwardAngle = 0;
