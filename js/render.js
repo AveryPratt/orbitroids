@@ -92,7 +92,7 @@ function renderPlanets(){
   }
 }
 function renderShip(){
-  if(orbs.controls.flying && !orbs.controls.paused){
+  if(orbs.ship && (orbs.controls.flying && !orbs.controls.paused)){
     orbs.ship.resetAccel();
     if(orbs.ship.loaded && !orbs.ship.exploded){
       orbs.ship.shoot();
@@ -127,8 +127,8 @@ function renderShip(){
     if(!orbs.ship.exploded){
       orbs.ship.applyMotion();
     }
+    orbs.ship.draw();
   }
-  orbs.ship.draw();
 }
 function renderStartScreen(){
   name = sessionStorage.getItem('previousName');
@@ -207,10 +207,10 @@ function renderText(){
 }
 function renderEndScreen(){
   if(orbs.newScore){
-    var thisFinalScore = new ScoreItem(orbs.score, name);
-    retrieveScores();
-    addScore(thisFinalScore);
-    storeScores();
+    var thisFinalScore = new orbs.scoreboard.ScoreItem(orbs.score, orbs.controls.name);
+    orbs.scoreboard.retrieveScores();
+    orbs.scoreboard.addScore(thisFinalScore);
+    orbs.scoreboard.storeScores();
     orbs.newScore = false;
   }
   orbs.ctx.fillStyle = 'rgba(255, 255, 255, .2)';
@@ -224,15 +224,15 @@ function renderEndScreen(){
   orbs.ctx.font = 18 * orbs.unit + 'px Arial';
   orbs.ctx.textAlign = 'center';
   var scoreSelected = false;
-  for (var i = 0; i < scores.length; i++) {
-    if(!scoreSelected && scores[i].finalScore === orbs.score && scores[i].name === name){
+  for (var i = 0; i < orbs.scoreboard.scores.length; i++) {
+    if(!scoreSelected && orbs.scoreboard.scores[i].finalScore === orbs.score && orbs.scoreboard.scores[i].name === name){
       orbs.ctx.fillStyle = '#ff0000';
       scoreSelected = true;
     }
     else{
       orbs.ctx.fillStyle = '#000000';
     }
-    orbs.ctx.fillText(scores[i].finalScore + ' - ' + scores[i].name, 300 * orbs.unit, (165 + 20 * i) * orbs.unit);
+    orbs.ctx.fillText(orbs.scoreboard.scores[i].finalScore + ' - ' + orbs.scoreboard.scores[i].name, 300 * orbs.unit, (165 + 20 * i) * orbs.unit);
   }
   orbs.ctx.strokeStyle = '#ffffff';
   orbs.ctx.strokeRect(200 * orbs.unit, 145 * orbs.unit, 200 * orbs.unit, 210 * orbs.unit);

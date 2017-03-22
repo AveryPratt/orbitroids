@@ -76,7 +76,7 @@ orbs.objects = {
           this.explosionCount = 50;
         }
         else if(this.explosionCount > 0){
-          if(!paused){
+          if(!orbs.controls.paused){
             this.explosionCount -= 1;
           }
           orbs.ctx.beginPath();
@@ -95,8 +95,11 @@ orbs.objects = {
           orbs.ctx.fill();
         }
         else{
-          lives -= 1;
-          ship = null;
+          orbs.lives -= 1;
+          if(orbs.lives <= 0){
+            orbs.controls.gameEnd = true;
+          }
+          orbs.ship = null;
         }
       }
       else{
@@ -153,8 +156,6 @@ orbs.objects = {
       this.refineForwardAngle();
     };
     this.applyMotion = function(){
-      // console.log('vel: ' + this.vel.delta.x + ', ' + this.vel.delta.y);
-      // console.log('accel: ' + this.accel.delta.x + ', ' + this.accel.delta.y);
       this.vel.addVector(this.accel);
       this.vel = orbs.engine.vecDelta(this.vel.delta, this.vel.head, this.vel.deltaRot);
       this.trueAnom = orbs.engine.vecCart(this.vel.origin, orbs.planets[0].origin);
