@@ -6,8 +6,11 @@ function initializeNameInput(previousName){
   }
 }
 function init(){
+  orbs.init();
+  orbs.controls.init();
   setCanvas();
   setTextarea();
+  orbs.levels[orbs.level].setPlanets();
   orbs.levels[orbs.level].setShipTop();
 }
 function reduceShots(num){

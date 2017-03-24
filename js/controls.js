@@ -1,14 +1,16 @@
 'use strict';
 
 orbs.controls = {
-  flying: false,
-  gameStart: false,
-  gameEnd: false,
-  paused: false,
-  rot: 0,
-  dampenRot: false,
-  loaded: false,
-  name: null,
+  init: function(){
+    this.flying = false;
+    this.gameStart = false;
+    this.gameEnd = false;
+    this.paused = false;
+    this.rot = 0;
+    this.dampenRot = false;
+    this.loaded = false;
+    this.name = null;
+  },
   handleKeydown: function(event){
     switch(event.keyCode){
     case 13: // enter
@@ -27,6 +29,7 @@ orbs.controls = {
         orbs.controls.name = nameInput.value;
         sessionStorage.setItem('previousName', orbs.controls.name);
         init();
+        orbs.controls.gameStart = true;
       }
       break;
     case 16: // shift
