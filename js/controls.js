@@ -16,24 +16,24 @@ orbs.controls = {
     case 13: // enter
       if(!orbs.controls.gameStart){
         event.preventDefault();
-        orbs.startScreen = false;
         orbs.controls.name = nameInput.value;
+        orbs.startScreen = false;
         sessionStorage.setItem('previousName', orbs.controls.name);
         orbs.levels[orbs.level].setPlanets();
         orbs.controls.gameStart = true;
         renderFrame();
       }
       else if(orbs.controls.gameEnd){
-        nameInput.focus = true;
         event.preventDefault();
+        init();
+        nameInput.focus = true;
         orbs.controls.name = nameInput.value;
         sessionStorage.setItem('previousName', orbs.controls.name);
-        init();
         orbs.controls.gameStart = true;
       }
       break;
     case 16: // shift
-      if(!orbs.controls.gameEnd){
+      if(!orbs.controls.gameEnd && orbs.ship){
         event.preventDefault();
         orbs.ship.dampenRot = true;
       }
@@ -101,24 +101,34 @@ orbs.controls = {
     event.preventDefault();
     switch(event.keyCode){
     case 16: // shift
-      orbs.ship.dampenRot = false;
+      if(orbs.ship){
+        orbs.ship.dampenRot = false;
+      }
       break;
     case 38: // up
     case 87: // w
-      orbs.ship.burning = false;
+      if(orbs.ship){
+        orbs.ship.burning = false;
+      }
       break;
     case 40: // down
     case 83: // s
-      orbs.ship.burning = false;
-      orbs.ship.dampenBurn = false;
+      if(orbs.ship){
+        orbs.ship.burning = false;
+        orbs.ship.dampenBurn = false;
+      }
       break;
     case 37: // left
     case 65: // a
-      orbs.controls.rot = 0;
+      if(orbs.ship){
+        orbs.controls.rot = 0;
+      }
       break;
     case 39: // right
     case 68: // d
-      orbs.controls.rot = 0;
+      if(orbs.ship){
+        orbs.controls.rot = 0;
+      }
       break;
     default:
       break;

@@ -228,7 +228,7 @@ function renderEndScreen(){
   orbs.ctx.textAlign = 'center';
   var scoreSelected = false;
   for (var i = 0; i < orbs.scoreboard.scores.length; i++) {
-    if(!scoreSelected && orbs.scoreboard.scores[i].finalScore === orbs.score && orbs.scoreboard.scores[i].name === name){
+    if(!scoreSelected && orbs.scoreboard.scores[i].finalScore === orbs.score && orbs.scoreboard.scores[i].name === orbs.controls.name){
       orbs.ctx.fillStyle = '#ff0000';
       scoreSelected = true;
     }
